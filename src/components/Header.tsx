@@ -94,28 +94,36 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Project Selector dropdown */}
-          <div className="relative inline-flex items-center bg-slate-800/80 rounded-lg p-1 border border-slate-700/80">
-            <Users className="w-3.5 h-3.5 text-slate-400 ml-2 mr-1.5" />
-            <select
-              value={currentProject.id}
-              onChange={(e) => onSelectProject(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 font-medium py-1 pr-6 pl-1 focus:outline-none cursor-pointer"
-            >
-              {projectsList.map((p) => (
-                <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
-                  GAES {p.gaesNumber}: {p.company.name}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={onNewProject}
-              title="Crear nuevo GAES"
-              className="p-1 hover:bg-slate-700 text-slate-400 hover:text-emerald-400 rounded transition-colors"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {/* Project Selector dropdown: Instructors can switch GAES; Apprentices are scoped to their assigned GAES */}
+          {currentUser?.role === 'INSTRUCTOR' ? (
+            <div className="relative inline-flex items-center bg-slate-800/80 rounded-lg p-1 border border-slate-700/80">
+              <Users className="w-3.5 h-3.5 text-indigo-400 ml-2 mr-1.5" />
+              <select
+                value={currentProject.id}
+                onChange={(e) => onSelectProject(e.target.value)}
+                className="bg-transparent text-xs text-slate-200 font-medium py-1 pr-6 pl-1 focus:outline-none cursor-pointer"
+                title="Seleccionar GAES a evaluar"
+              >
+                {projectsList.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
+                    GAES {p.gaesNumber}: {p.company.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={onNewProject}
+                title="Crear nuevo GAES"
+                className="p-1 hover:bg-slate-700 text-slate-400 hover:text-emerald-400 rounded transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="inline-flex items-center bg-slate-800/80 rounded-lg px-2.5 py-1.5 border border-slate-700/80 text-xs font-medium text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 mr-2 shrink-0"></span>
+              <span>GAES Asignado: <strong>GAES {currentProject.gaesNumber}</strong></span>
+            </div>
+          )}
         </div>
 
         {/* Right: Mode Switcher & Global Actions */}

@@ -14,10 +14,10 @@ interface DigitalSignaturePadProps {
 
 export interface SignatureMeta {
   signedAt: string;
-  hashToken: string;
   signeeName: string;
   signeeDocument: string;
-  isVerified: boolean;
+  hasSignature: boolean;
+  signatureType: 'MANUSCRITA_DIGITALIZADA';
 }
 
 export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
@@ -34,17 +34,13 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(Boolean(initialSignature));
   const [signatureUrl, setSignatureUrl] = useState<string | null>(initialSignature);
-  const [signatureMeta, setSignatureMeta] = useState<SignatureMeta>(() => {
-    const now = new Date();
-    const token = 'SENA-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + now.getFullYear();
-    return {
-      signedAt: now.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }),
-      hashToken: token,
-      signeeName,
-      signeeDocument,
-      isVerified: Boolean(initialSignature),
-    };
-  });
+  const [signatureMeta, setSignatureMeta] = useState<SignatureMeta>(() => ({
+    signedAt: initialSignature ? new Date().toLocaleString('es-CO') : '',
+    signeeName,
+    signeeDocument,
+    hasSignature: Boolean(initialSignature),
+    signatureType: 'MANUSCRITA_DIGITALIZADA',
+  }));
 
   // Setup canvas resolution and initial rendering
   useEffect(() => {
@@ -53,7 +49,6 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set background to transparent or light
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.lineWidth = 2.2;
@@ -110,7 +105,7 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
     setHasDrawn(true);
   };
 
-  const stopDrawing = (e?: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const stopDrawing = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
     saveCurrentCanvas();
@@ -123,13 +118,21 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
     setSignatureUrl(dataUrl);
 
     const now = new Date();
-    const token = 'SENA-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + now.getFullYear();
+    const realTimestamp = now.toLocaleString('es-CO', { 
+      year: 'numeric',
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
+
     const meta: SignatureMeta = {
-      signedAt: now.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }),
-      hashToken: signatureMeta.hashToken || token,
+      signedAt: realTimestamp,
       signeeName,
       signeeDocument,
-      isVerified: true,
+      hasSignature: true,
+      signatureType: 'MANUSCRITA_DIGITALIZADA',
     };
     setSignatureMeta(meta);
     onSignatureChange(dataUrl, meta);
@@ -144,51 +147,15 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasDrawn(false);
     setSignatureUrl(null);
-    const updatedMeta = { ...signatureMeta, isVerified: false };
+    const updatedMeta: SignatureMeta = {
+      signedAt: '',
+      signeeName,
+      signeeDocument,
+      hasSignature: false,
+      signatureType: 'MANUSCRITA_DIGITALIZADA',
+    };
     setSignatureMeta(updatedMeta);
     onSignatureChange(null, updatedMeta);
-  };
-
-  const handleStampOfficialSignature = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = 2.5;
-    ctx.strokeStyle = '#0f172a';
-
-    // Draw stylized signature calligraphy
-    const w = canvas.width;
-    const h = canvas.height;
-
-    ctx.beginPath();
-    // First initial loop
-    ctx.moveTo(w * 0.15, h * 0.65);
-    ctx.bezierCurveTo(w * 0.18, h * 0.25, w * 0.28, h * 0.2, w * 0.32, h * 0.55);
-    ctx.bezierCurveTo(w * 0.35, h * 0.75, w * 0.25, h * 0.85, w * 0.22, h * 0.7);
-    ctx.bezierCurveTo(w * 0.2, h * 0.45, w * 0.38, h * 0.35, w * 0.45, h * 0.6);
-
-    // Dynamic wave strokes
-    ctx.bezierCurveTo(w * 0.5, h * 0.75, w * 0.55, h * 0.45, w * 0.62, h * 0.58);
-    ctx.bezierCurveTo(w * 0.68, h * 0.7, w * 0.75, h * 0.38, w * 0.82, h * 0.55);
-
-    // Underline flourish
-    ctx.moveTo(w * 0.18, h * 0.82);
-    ctx.bezierCurveTo(w * 0.45, h * 0.8, w * 0.65, h * 0.88, w * 0.88, h * 0.78);
-    ctx.stroke();
-
-    // Small dot at the end
-    ctx.beginPath();
-    ctx.arc(w * 0.9, h * 0.76, 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#0f172a';
-    ctx.fill();
-
-    setHasDrawn(true);
-    saveCurrentCanvas();
   };
 
   return (
@@ -206,7 +173,7 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
               : 'bg-amber-50 text-amber-800 border-amber-300'
           }`}
         >
-          {hasDrawn ? '✓ Rúbrica Lista' : '⚠️ Pendiente de Firma'}
+          {hasDrawn ? '✓ Rúbrica Capturada' : '⚠️ Pendiente de Rúbrica'}
         </span>
       </div>
 
@@ -235,14 +202,14 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
 
         {/* Placeholder guide line */}
         <div className="pointer-events-none absolute bottom-5 left-6 right-6 border-b border-slate-300/80 flex items-center justify-between">
-          <span className="text-[8px] text-slate-400 font-mono">Línea de rúbrica digital</span>
-          <span className="text-[8px] text-slate-400">SENA Guía 16</span>
+          <span className="text-[8px] text-slate-400 font-mono">Trazar firma manuscrita</span>
+          <span className="text-[8px] text-slate-400">Guía 16 SENA</span>
         </div>
 
         {!hasDrawn && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <span className="text-[10px] text-slate-400 font-medium bg-white/90 px-2 py-0.5 rounded shadow-sm border border-slate-200">
-              Dibuje su firma aquí (mouse o táctil)
+              Dibuje su firma aquí con el puntero o dedo
             </span>
           </div>
         )}
@@ -250,34 +217,30 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
-        <button
-          type="button"
-          onClick={handleStampOfficialSignature}
-          className="flex items-center gap-1 text-[10px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded border border-indigo-200 transition-colors"
-        >
-          <Sparkles className="w-3 h-3 text-indigo-600" />
-          <span>Estampar Rúbrica Oficial</span>
-        </button>
+        <span className="text-[10px] text-slate-500 italic">
+          Captura manuscrita sobre pantalla (Ley 527 de 1999, Art. 7)
+        </span>
 
         <button
           type="button"
           onClick={handleClear}
-          className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-rose-700 bg-slate-100 hover:bg-rose-50 px-2 py-1 rounded border border-slate-200 transition-colors"
+          disabled={!hasDrawn}
+          className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-rose-700 bg-slate-100 hover:bg-rose-50 px-2.5 py-1 rounded border border-slate-200 transition-colors disabled:opacity-40"
         >
           <RotateCcw className="w-3 h-3" />
-          <span>Limpiar</span>
+          <span>Borrar y repetir</span>
         </button>
       </div>
 
-      {/* Digital Stamp Certificate */}
+      {/* Status Box */}
       {hasDrawn && (
         <div className="p-2 rounded bg-emerald-50/80 border border-emerald-200/80 text-[9px] text-emerald-950 space-y-0.5">
           <div className="flex items-center gap-1 font-bold text-emerald-900">
             <ShieldCheck className="w-3 h-3 text-emerald-600" />
-            <span>Firma Digital Certificada Radicada</span>
+            <span>Firma manuscrita digitalizada registrada en la sesión</span>
           </div>
           <div className="font-mono text-slate-600 text-[8px]">
-            Token: <span className="font-bold text-slate-800">{signatureMeta.hashToken}</span> • {signatureMeta.signedAt}
+            Fecha y hora de captura: <span className="font-bold text-slate-800">{signatureMeta.signedAt}</span>
           </div>
         </div>
       )}

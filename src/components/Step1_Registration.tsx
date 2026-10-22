@@ -80,11 +80,17 @@ export const Step1_Registration: React.FC<Step1Props> = ({
     if (!newMemberName.trim()) return;
     setMemberError(null);
 
+    const trimmedEmail = newMemberEmail.trim().toLowerCase();
+    if (trimmedEmail && !/^[a-zA-Z0-9._%+-]+@soy\.sena\.edu\.co$/i.test(trimmedEmail)) {
+      setMemberError('El correo del aprendiz debe pertenecer al dominio institucional autorizado: @soy.sena.edu.co');
+      return;
+    }
+
     const newApprentice: Apprentice = {
       id: `app-${Date.now()}`,
       name: newMemberName.trim(),
       document: newMemberDocument.trim() || 'Por asignar',
-      email: newMemberEmail.trim() || 'aprendiz@sena.edu.co',
+      email: trimmedEmail || `aprendiz_${Date.now().toString().slice(-4)}@soy.sena.edu.co`,
       phone: newMemberPhone.trim() || '300 000 0000',
       role: newMemberRole,
     };
@@ -374,7 +380,7 @@ export const Step1_Registration: React.FC<Step1Props> = ({
                 />
                 <input
                   type="email"
-                  placeholder="Correo institucional SENA"
+                  placeholder="aprendiz@soy.sena.edu.co"
                   value={newMemberEmail}
                   onChange={(e) => setNewMemberEmail(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"

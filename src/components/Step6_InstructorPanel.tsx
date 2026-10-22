@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Award, 
   CheckCircle2, 
@@ -11,15 +11,25 @@ import {
   UserCheck, 
   FileText, 
   Scale, 
-  Sliders,
-  Calendar,
-  Save,
-  Clock
+  Sliders, 
+  Calendar, 
+  Save, 
+  Clock, 
+  BarChart3, 
+  ClipboardCheck,
+  Users,
+  Search,
+  Filter,
+  History,
+  Eye,
+  X,
+  AlertCircle,
+  Building2,
+  ArrowRight
 } from 'lucide-react';
-import { GAESProject, InstructorEvaluation, InstructorCriteria } from '../types';
+import { GAESProject, InstructorEvaluation, InstructorCriteria, AuthUser, AuditContributionRecord } from '../types';
 import { buildInitialInstructorCriteria, SENA_COMPETENCIAS_ORGANIZACIONALES } from '../data/learningCompetencies';
 import { InstructorDashboard } from './InstructorDashboard';
-import { BarChart3, ClipboardCheck } from 'lucide-react';
 
 interface Step6Props {
   project: GAESProject;
@@ -28,6 +38,8 @@ interface Step6Props {
   onUpdateProject: (updated: Partial<GAESProject>) => void;
   onOpenPrintModal: () => void;
   onPrevStep: () => void;
+  currentUser?: AuthUser | null;
+  onReopenProject?: (projectId: string, reason: string) => Promise<void> | void;
 }
 
 export const Step6_InstructorPanel: React.FC<Step6Props> = ({
@@ -37,10 +49,58 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
   onUpdateProject,
   onOpenPrintModal,
   onPrevStep,
+  currentUser,
+  onReopenProject,
 }) => {
   const { instructorEvaluation } = project;
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [viewMode, setViewMode] = useState<'DASHBOARD' | 'RUBRIC'>('DASHBOARD');
+  const [viewMode, setViewMode] = useState<'DASHBOARD' | 'RUBRIC' | 'TRACKING'>('DASHBOARD');
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<{
+    juicioSugerido?: string;
+    observacionProducto?: string;
+    observacionDesempeno?: string;
+  } | null>(null);
+  const [saveNotification, setSaveNotification] = useState<string | null>(null);
+
+  // Tracking and Reopen state
+  const [isReopenModalOpen, setIsReopenModalOpen] = useState(false);
+  const [reopenTargetProject, setReopenTargetProject] = useState<GAESProject>(project);
+  const [reopenReasonText, setReopenReasonText] = useState('');
+  const [reopenError, setReopenError] = useState<string | null>(null);
+  const [isSubmittingReopen, setIsSubmittingReopen] = useState(false);
+  const [trackingSearch, setTrackingSearch] = useState('');
+  const [filterGaesTrack, setFilterGaesTrack] = useState<number | 'ALL'>('ALL');
+  const [filterPhaseTrack, setFilterPhaseTrack] = useState<number | 'ALL'>('ALL');
+
+  const cohortProjects = projectsList && projectsList.length > 0 ? projectsList : [project];
+
+  const allAuditRecords: AuditContributionRecord[] = useMemo(() => {
+    const list: AuditContributionRecord[] = [];
+    cohortProjects.forEach((p) => {
+      if (Array.isArray(p.collaborationHistory)) {
+        p.collaborationHistory.forEach((rec) => list.push(rec));
+      }
+    });
+    return list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [cohortProjects]);
+
+  const filteredAuditRecords = useMemo(() => {
+    return allAuditRecords.filter((rec) => {
+      if (filterGaesTrack !== 'ALL' && rec.gaesNumber !== filterGaesTrack) return false;
+      if (filterPhaseTrack !== 'ALL' && rec.phase !== filterPhaseTrack) return false;
+      if (trackingSearch.trim()) {
+        const q = trackingSearch.toLowerCase();
+        const match =
+          rec.userName.toLowerCase().includes(q) ||
+          rec.userEmail.toLowerCase().includes(q) ||
+          rec.description.toLowerCase().includes(q) ||
+          rec.component.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      return true;
+    });
+  }, [allAuditRecords, filterGaesTrack, filterPhaseTrack, trackingSearch]);
 
   const handleUpdateEvaluation = (updates: Partial<InstructorEvaluation>) => {
     onUpdateProject({
@@ -56,10 +116,16 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
       c.id === criterionId ? { ...c, ...updates } : c
     );
 
-    const totalWeight = updatedCriteria.reduce((acc, c) => acc + c.weight, 0);
-    const calculatedProductScore = Math.round(
-      updatedCriteria.reduce((acc, c) => acc + (c.score * c.weight), 0) / (totalWeight || 1)
+    const evaluatedCriteria = updatedCriteria.filter(
+      (c) => c.status !== 'Pendiente de Evaluación' && c.score > 0
     );
+    const totalWeightEvaluated = evaluatedCriteria.reduce((acc, c) => acc + c.weight, 0);
+    const calculatedProductScore =
+      evaluatedCriteria.length > 0
+        ? Math.round(
+            evaluatedCriteria.reduce((acc, c) => acc + (c.score * c.weight), 0) / (totalWeightEvaluated || 1)
+          )
+        : 0;
 
     handleUpdateEvaluation({
       criteria: updatedCriteria,
@@ -68,24 +134,68 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
   };
 
   const handleLoadOfficialCompetencies = () => {
-    const officialCriteria = buildInitialInstructorCriteria();
-    const totalWeight = officialCriteria.reduce((acc, c) => acc + c.weight, 0);
-    const calculatedProductScore = Math.round(
-      officialCriteria.reduce((acc, c) => acc + (c.score * c.weight), 0) / (totalWeight || 1)
+    // Preserve any existing evaluations already registered by the instructor (scores, feedback, status)
+    const existingCriteriaMap = new Map<string, InstructorCriteria>();
+    (instructorEvaluation.criteria || []).forEach((c) => {
+      if (c.rapCode) existingCriteriaMap.set(c.rapCode, c);
+      if (c.id) existingCriteriaMap.set(c.id, c);
+    });
+
+    const officialDefs = buildInitialInstructorCriteria(false); // evaluated: false -> score 0, status: 'Pendiente de Evaluación'
+    const mergedCriteria: InstructorCriteria[] = officialDefs.map((def) => {
+      const existing = existingCriteriaMap.get(def.rapCode) || existingCriteriaMap.get(def.id);
+      if (existing) {
+        // PRESERVE existing evaluation, score, feedback and status intact!
+        return {
+          ...def,
+          score: existing.score,
+          status: existing.status,
+          feedback: existing.feedback,
+        };
+      }
+      // New competency initialized without fictitious scores:
+      return {
+        ...def,
+        score: 0,
+        status: 'Pendiente de Evaluación',
+        feedback: 'Pendiente de evaluación y retroalimentación técnica por el instructor asignado.',
+      };
+    });
+
+    // Calculate product score only from criteria that have been actually evaluated
+    const evaluatedCriteria = mergedCriteria.filter(
+      (c) => c.status !== 'Pendiente de Evaluación' && c.score > 0
     );
+    const totalWeightEvaluated = evaluatedCriteria.reduce((acc, c) => acc + c.weight, 0);
+    const calculatedProductScore =
+      evaluatedCriteria.length > 0
+        ? Math.round(
+            evaluatedCriteria.reduce((acc, c) => acc + (c.score * c.weight), 0) / (totalWeightEvaluated || 1)
+          )
+        : instructorEvaluation.productEvidenceScore > 0
+        ? instructorEvaluation.productEvidenceScore
+        : 0;
+
     handleUpdateEvaluation({
-      criteria: officialCriteria,
+      criteria: mergedCriteria,
       productEvidenceScore: calculatedProductScore,
-      performanceEvidenceScore: 92,
+      // CRITICAL: Preserve existing performanceEvidenceScore, NEVER set default 92
+      performanceEvidenceScore: instructorEvaluation.performanceEvidenceScore || 0,
     });
   };
 
   const handleSuggestAIEvaluation = async () => {
     setIsGeneratingAI(true);
+    setAiErrorMessage(null);
+    setAiSuggestion(null);
+
     try {
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(currentUser?.token ? { Authorization: `Bearer ${currentUser.token}` } : {}),
+        },
         body: JSON.stringify({
           action: 'instructor-evaluation',
           payload: {
@@ -100,40 +210,131 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
         }),
       });
 
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const errMsg =
+          errData.error ||
+          `El servicio de IA respondió con error (Código HTTP ${response.status}). No se generó dictamen automático. Continúe con la evaluación manual del instructor.`;
+        setAiErrorMessage(errMsg);
+        // Do NOT assign APROBADO or default scores. Maintain state intact.
+        return;
+      }
+
       const resData = await response.json();
       if (resData.success && resData.data) {
         const d = resData.data;
-        handleUpdateEvaluation({
-          finalJudgment: d.juicioSugerido || 'APROBADO',
-          productObservation: d.observacionProducto || instructorEvaluation.productObservation,
-          performanceObservation: d.observacionDesempeno || instructorEvaluation.performanceObservation,
+        // AI provides an advisory recommendation (Nivel 2), never the definitive judgment (Nivel 3)
+        setAiSuggestion({
+          juicioSugerido: d.juicioSugerido || 'APROBADO',
+          observacionProducto: d.observacionProducto || '',
+          observacionDesempeno: d.observacionDesempeno || '',
         });
+        // The project's official finalJudgment remains unchanged or as PENDIENTE DE EVALUACIÓN
+        // until the instructor explicitly selects their decision
       } else {
-        // Fallback proposal
-        handleUpdateEvaluation({
-          finalJudgment: 'APROBADO',
-          productObservation:
-            'Evidencias de producto revisadas conforme a los lineamientos de la Guía 16. Las matrices MEFI, MEFE y PEYEA demuestran consistencia metodológica con el Balanced Scorecard. Se avala la calidad técnica de las fichas de indicadores.',
-          performanceObservation:
-            'El equipo GAES sustenta con claridad la articulación de su modelo de negocio, demostrando dominio de los términos técnicos y apropiación de las estrategias propuestas.',
-        });
+        const errMsg =
+          resData.error ||
+          'Respuesta incompleta del servicio de IA. No se asignó ningún juicio automático. Por favor, realice la evaluación manual.';
+        setAiErrorMessage(errMsg);
       }
-    } catch {
-      handleUpdateEvaluation({
-        finalJudgment: 'APROBADO',
-        productObservation:
-          'Matrices revisadas con cumplimiento satisfactorio de criterios SENA. Cuadro de Mando Integral validado para la fase de evaluación del proyecto formativo.',
-        performanceObservation:
-          'Sustentación grupal aprobada con participación activa de todos los integrantes del GAES.',
-      });
+    } catch (err: any) {
+      console.error('Error al solicitar propuesta de IA:', err);
+      setAiErrorMessage(
+        `Fallo en la comunicación con el servicio de IA: ${err.message || 'Error de red'}. El proyecto se mantiene en estado actual sin aprobación automática. Realice la evaluación manual.`
+      );
     } finally {
       setIsGeneratingAI(false);
     }
   };
 
+  const handleApplyAiSuggestion = () => {
+    if (!aiSuggestion) return;
+    handleUpdateEvaluation({
+      productObservation: aiSuggestion.observacionProducto || instructorEvaluation.productObservation,
+      performanceObservation: aiSuggestion.observacionDesempeno || instructorEvaluation.performanceObservation,
+    });
+    setAiSuggestion(null);
+  };
+
+  const handleSaveDefinitiveEvaluation = () => {
+    if (!instructorEvaluation.instructorName.trim()) {
+      setAiErrorMessage('Debe ingresar el nombre del instructor evaluador antes de guardar la evaluación definitiva.');
+      return;
+    }
+    if (instructorEvaluation.finalJudgment === 'PENDIENTE DE EVALUACIÓN') {
+      setAiErrorMessage('Debe seleccionar un dictamen oficial (APROBADO o NO APROBADO) para registrar la evaluación definitiva.');
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const auditRecord = {
+      id: `audit-${Date.now()}`,
+      timestamp: now,
+      action: 'REGISTRO_EVALUACION_DEFINITIVA',
+      evaluatedBy: currentUser?.name || instructorEvaluation.instructorName || 'Instructor Técnico',
+      instructorDocument: instructorEvaluation.instructorDocument,
+      judgment: instructorEvaluation.finalJudgment,
+      productScore: instructorEvaluation.productEvidenceScore,
+      performanceScore: instructorEvaluation.performanceEvidenceScore,
+      observationsNote: 'Dictamen registrado en plataforma. Formalización física pendiente de impresión y firma manuscrita.',
+    };
+
+    handleUpdateEvaluation({
+      isDefinitiveSaved: true,
+      isLocked: true,
+      evaluatedAt: now,
+      lastModifiedAt: now,
+      modifiedBy: currentUser?.name || instructorEvaluation.instructorName || 'Instructor Técnico',
+      auditHistory: [...(instructorEvaluation.auditHistory || []), auditRecord],
+    });
+
+    onUpdateProject({ isLocked: true });
+    setAiErrorMessage(null);
+    setSaveNotification('Evaluación definitiva registrada exitosamente. El proyecto ha sido bloqueado para modificaciones ordinarias. Imprima el acta para la firma física del instructor.');
+    setTimeout(() => setSaveNotification(null), 7000);
+  };
+
+  const handleOpenReopenModal = (target: GAESProject) => {
+    setReopenTargetProject(target);
+    setReopenReasonText('');
+    setReopenError(null);
+    setIsReopenModalOpen(true);
+  };
+
+  const handleConfirmReopen = async () => {
+    if (!reopenReasonText.trim()) {
+      setReopenError('Debe ingresar obligatoriamente una justificación pedagógica para la reapertura (ej. Plan de Mejoramiento Formativo).');
+      return;
+    }
+    setIsSubmittingReopen(true);
+    setReopenError(null);
+
+    try {
+      if (onReopenProject) {
+        await onReopenProject(reopenTargetProject.id, reopenReasonText.trim());
+      } else {
+        handleUpdateEvaluation({
+          isDefinitiveSaved: false,
+          isLocked: false,
+        });
+      }
+      setIsReopenModalOpen(false);
+      setSaveNotification(`Reapertura del GAES ${reopenTargetProject.gaesNumber} registrada exitosamente.`);
+      setTimeout(() => setSaveNotification(null), 5000);
+    } catch (err: any) {
+      setReopenError(err.message || 'Error al procesar la reapertura.');
+    } finally {
+      setIsSubmittingReopen(false);
+    }
+  };
+
+  const handleUnlockEvaluation = () => {
+    handleOpenReopenModal(project);
+  };
+
   return (
     <div className="space-y-6">
-      {/* View Switcher: Cohort Dashboard vs Individual Rubric */}
+      {/* View Switcher: Cohort Dashboard vs Individual Rubric vs Tracking */}
       <div className="flex items-center justify-between flex-wrap gap-2 bg-slate-900 border border-slate-800 p-2 rounded-2xl shadow-lg">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button
@@ -146,7 +347,20 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            <span>Dashboard Comparativo de Cohorte ({projectsList?.length || 1} GAES)</span>
+            <span>Dashboard Comparativo ({projectsList?.length || 1} GAES)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('TRACKING')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              viewMode === 'TRACKING'
+                ? 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg shadow-teal-950 scale-102'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Seguimiento Colaborativo & Trazabilidad</span>
           </button>
 
           <button
@@ -159,7 +373,7 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
             }`}
           >
             <ClipboardCheck className="w-4 h-4" />
-            <span>Rúbrica de Evaluación Individual: GAES {project.gaesNumber} ({project.company.name})</span>
+            <span>Rúbrica de Evaluación: GAES {project.gaesNumber} ({project.company.name})</span>
           </button>
         </div>
 
@@ -169,16 +383,344 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
         </div>
       </div>
 
-      {viewMode === 'DASHBOARD' ? (
+      {viewMode === 'DASHBOARD' && (
         <InstructorDashboard
-          projects={projectsList && projectsList.length > 0 ? projectsList : [project]}
+          projects={cohortProjects}
           currentProjectId={project.id}
           onSelectProject={(id) => {
             if (onSelectProject) onSelectProject(id);
           }}
           onOpenEvaluationDetail={() => setViewMode('RUBRIC')}
         />
-      ) : (
+      )}
+
+      {viewMode === 'TRACKING' && (
+        <div className="space-y-6 animate-in fade-in">
+          {/* Top Institutional Tracking Banner */}
+          <div className="bg-gradient-to-r from-teal-950/70 via-slate-900 to-cyan-950/60 border border-teal-500/30 rounded-2xl p-5 shadow-xl">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-teal-400 uppercase tracking-wider bg-teal-500/10 px-2 py-0.5 rounded">
+                      Seguimiento Académico & Trazabilidad de GAES
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">Ficha {project.fichaNumber}</span>
+                  </div>
+                  <h2 className="text-lg font-bold text-white mt-1">
+                    Supervisión Colaborativa y Auditoría de Aportes Individuales
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
+                    Monitorea el progreso de los GAES pre-conformados, la vinculación de cuentas institucionales (@soy.sena.edu.co), las intervenciones efectivas y el estado de bloqueo de proyectos evaluados.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('RUBRIC')}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-lg transition-all flex items-center gap-1.5"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  <span>Ir a Rúbrica de Evaluación</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <span className="text-slate-400 text-[11px] block">GAES Supervisados</span>
+              <span className="text-xl font-bold text-white">{cohortProjects.length}</span>
+              <span className="text-[10px] text-teal-400 font-medium block">Pre-constituidos</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <span className="text-slate-400 text-[11px] block">Evaluados / Bloqueados</span>
+              <span className="text-xl font-bold text-amber-400">
+                {cohortProjects.filter((p) => p.isLocked || p.instructorEvaluation?.isDefinitiveSaved).length}
+              </span>
+              <span className="text-[10px] text-slate-500 block">Requieren reapertura para edición</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <span className="text-slate-400 text-[11px] block">En Proceso / Borrador</span>
+              <span className="text-xl font-bold text-emerald-400">
+                {cohortProjects.filter((p) => !p.instructorEvaluation?.isDefinitiveSaved).length}
+              </span>
+              <span className="text-[10px] text-slate-500 block">Pendientes de dictamen definitivo</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-1">
+              <span className="text-slate-400 text-[11px] block">Aportes en Servidor</span>
+              <span className="text-xl font-bold text-cyan-400">{allAuditRecords.length}</span>
+              <span className="text-[10px] text-slate-500 block">Registros inmutables</span>
+            </div>
+          </div>
+
+          {/* GAES Cohort Status Table */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-teal-400" />
+                  <span>Estado de Equipos GAES Asignados</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Identificación de integrantes por cuenta institucional, avance y control de bloqueo formativo.
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-slate-950 text-slate-400 text-[11px] uppercase tracking-wider font-semibold border-b border-slate-800">
+                  <tr>
+                    <th className="py-2.5 px-3">GAES & Empresa</th>
+                    <th className="py-2.5 px-3">Integrantes Reconocidos (@soy.sena.edu.co)</th>
+                    <th className="py-2.5 px-3 text-center">Fase / Progreso</th>
+                    <th className="py-2.5 px-3">Última Sincronización</th>
+                    <th className="py-2.5 px-3 text-center">Dictamen</th>
+                    <th className="py-2.5 px-3 text-center">Control de Bloqueo</th>
+                    <th className="py-2.5 px-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-sans">
+                  {cohortProjects.map((p) => {
+                    const isEvalSaved = p.instructorEvaluation?.isDefinitiveSaved;
+                    const isLocked = p.isLocked || isEvalSaved;
+                    const lastUpdatedDate = p.lastUpdated ? new Date(p.lastUpdated) : null;
+                    const isInactive = lastUpdatedDate ? Date.now() - lastUpdatedDate.getTime() > 48 * 60 * 60 * 1000 : false;
+
+                    return (
+                      <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="py-3 px-3">
+                          <span className="font-bold text-white block">GAES {p.gaesNumber}: {p.company.name}</span>
+                          <span className="text-[10px] text-slate-400">{p.company.sector} • Ficha {p.fichaNumber}</span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="space-y-1">
+                            {p.apprentices.map((a) => (
+                              <div key={a.id} className="flex items-center gap-1.5 text-[11px]">
+                                <span className="font-medium text-slate-200">{a.name}</span>
+                                <span className="text-[10px] text-teal-400 font-mono">({a.email})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 text-[10px] font-mono">
+                            Fase {p.currentStep || 1} de 6
+                          </span>
+                          <span className={`block text-[9px] mt-1 ${p.isMatricesValidated ? 'text-emerald-400' : 'text-amber-400'}`}>
+                            {p.isMatricesValidated ? 'Matrices Validadas' : 'Matrices en Proceso'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-[11px]">
+                          <span className="text-slate-300 block">
+                            {lastUpdatedDate ? lastUpdatedDate.toLocaleDateString() + ' ' + lastUpdatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Sin registro'}
+                          </span>
+                          {isInactive && (
+                            <span className="text-[9px] text-amber-400 font-semibold bg-amber-950/60 border border-amber-500/40 px-1.5 py-0.5 rounded inline-block mt-0.5">
+                              Alerta: Sin actividad &gt; 48h
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              p.instructorEvaluation?.finalJudgment === 'APROBADO' && isEvalSaved
+                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                                : p.instructorEvaluation?.finalJudgment?.includes('NO APROBADO') && isEvalSaved
+                                ? 'bg-rose-950 text-rose-300 border border-rose-500/40'
+                                : 'bg-slate-800 text-slate-400 border border-slate-700'
+                            }`}
+                          >
+                            {isEvalSaved
+                              ? p.instructorEvaluation.finalJudgment
+                              : 'BORRADOR FORMATIVO'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {isLocked ? (
+                            <div className="inline-flex flex-col items-center gap-1">
+                              <span className="text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
+                                <Lock className="w-3 h-3" /> Bloqueado
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReopenModal(p)}
+                                className="text-[10px] text-amber-300 hover:text-white underline font-semibold transition-colors"
+                              >
+                                Reabrir proyecto
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1">
+                              <Unlock className="w-3 h-3" /> Editable
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onSelectProject) onSelectProject(p.id);
+                              setViewMode('RUBRIC');
+                            }}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow transition-all inline-flex items-center gap-1"
+                          >
+                            <span>Evaluar</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Immutable Individual Contribution Audit Trail */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <History className="w-4 h-4 text-cyan-400" />
+                  <span>Historial Inmutable de Auditoría & Trazabilidad Individual</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Registro de operaciones verificadas por el servidor por aprendiz, fase, recurso y versión.
+                </p>
+              </div>
+
+              {/* Filters */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={trackingSearch}
+                    onChange={(e) => setTrackingSearch(e.target.value)}
+                    placeholder="Buscar por aprendiz o componente..."
+                    className="bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                <select
+                  value={filterGaesTrack}
+                  onChange={(e) => setFilterGaesTrack(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+                  className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="ALL">Todos los GAES</option>
+                  {cohortProjects.map((p) => (
+                    <option key={p.id} value={p.gaesNumber}>
+                      GAES {p.gaesNumber}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterPhaseTrack}
+                  onChange={(e) => setFilterPhaseTrack(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+                  className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="ALL">Todas las Fases</option>
+                  <option value={1}>Fase 1: Registro</option>
+                  <option value={2}>Fase 2: Entregables</option>
+                  <option value={3}>Fase 3: Matrices</option>
+                  <option value={4}>Fase 4: BSC</option>
+                  <option value={5}>Fase 5: Auditoría</option>
+                  <option value={6}>Fase 6: Evaluación</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Audit Table */}
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-slate-950 text-slate-400 text-[10px] uppercase tracking-wider font-semibold sticky top-0 border-b border-slate-800">
+                  <tr>
+                    <th className="py-2 px-3">Fecha y Hora</th>
+                    <th className="py-2 px-3">Autor (Cuenta Institucional)</th>
+                    <th className="py-2 px-3 text-center">GAES</th>
+                    <th className="py-2 px-3 text-center">Fase</th>
+                    <th className="py-2 px-3">Componente Intervenido</th>
+                    <th className="py-2 px-3 text-center">Operación</th>
+                    <th className="py-2 px-3 text-center">Versión</th>
+                    <th className="py-2 px-3">Descripción Verificable</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-sans text-[11px]">
+                  {filteredAuditRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-6 text-center text-slate-500 italic">
+                        No se encontraron registros de auditoría que coincidan con los filtros aplicados.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAuditRecords.map((rec) => (
+                      <tr key={rec.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2 px-3 text-slate-400 font-mono text-[10px]">
+                          {new Date(rec.timestamp).toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className="font-semibold text-white block">{rec.userName}</span>
+                          <span className="text-[10px] text-teal-400 font-mono">{rec.userEmail}</span>
+                        </td>
+                        <td className="py-2 px-3 text-center font-bold text-slate-300">
+                          GAES {rec.gaesNumber}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono">
+                            Fase {rec.phase}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-slate-300 font-medium">
+                          {rec.component}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              rec.operationType === 'CREAR'
+                                ? 'bg-blue-950 text-blue-300 border border-blue-500/40'
+                                : rec.operationType === 'EVALUAR'
+                                ? 'bg-purple-950 text-purple-300 border border-purple-500/40'
+                                : rec.operationType === 'REAPERTURA'
+                                ? 'bg-amber-950 text-amber-300 border border-amber-500/40'
+                                : 'bg-slate-800 text-slate-300 border border-slate-700'
+                            }`}
+                          >
+                            {rec.operationType}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-center font-mono text-[10px] text-slate-400">
+                          {rec.previousVersion ? `v${rec.previousVersion} → v${rec.newVersion}` : `v${rec.newVersion}`}
+                        </td>
+                        <td className="py-2 px-3 text-slate-300">
+                          {rec.description}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pedagogical Principle Disclaimer */}
+            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 leading-relaxed flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+              <span>
+                <strong>Principio Pedagógico Institucional:</strong> La cantidad de modificaciones registradas no representa automáticamente la calidad del aporte ni produce calificaciones individuales automáticas. La trazabilidad opera como evidencia complementaria para la retroalimentación formativa y seguimiento del instructor SENA.
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'RUBRIC' && (
         <>
           {/* Banner */}
           <div className="bg-gradient-to-r from-indigo-950/70 via-slate-900 to-purple-950/60 border border-indigo-500/30 rounded-2xl p-5 shadow-xl">
@@ -198,7 +740,7 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
                 Panel de Seguimiento y Evaluación por el Instructor
               </h2>
               <p className="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
-                Como instructor técnico, revisa las evidencias documentales y de desempeño con criterios previamente establecidos. Puedes generar una propuesta inteligente con IA, ajustar las observaciones cualitativas y emitir el juicio evaluativo final.
+                Como instructor técnico, revisa las evidencias documentales y de desempeño con criterios previamente establecidos. Puedes solicitar una propuesta orientativa de IA (Nivel 2), emitir tu dictamen manual (Nivel 3) y formalizar la evaluación mediante firma física manuscrita.
               </p>
             </div>
           </div>
@@ -208,9 +750,10 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
               onClick={handleSuggestAIEvaluation}
               disabled={isGeneratingAI}
               className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-indigo-950 transition-all disabled:opacity-50"
+              title="Solicitar propuesta pedagógica de apoyo a la IA (No emite calificaciones automáticas)"
             >
               <Sparkles className="w-4 h-4 text-indigo-200" />
-              <span>{isGeneratingAI ? 'Generando...' : 'Proponer Evaluación IA'}</span>
+              <span>{isGeneratingAI ? 'Consultando IA...' : 'Proponer Evaluación IA'}</span>
             </button>
 
             <button
@@ -224,17 +767,104 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
         </div>
       </div>
 
+      {/* AI Error Alert (Transparent failure without automatic approval) */}
+      {aiErrorMessage && (
+        <div className="bg-rose-950/60 border border-rose-500/60 rounded-2xl p-4 flex items-start justify-between gap-3 text-xs text-rose-200 shadow-xl animate-in fade-in">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <strong className="block text-white font-bold">Fallo en el Servicio de Inteligencia Artificial</strong>
+              <p className="text-rose-200 leading-relaxed">{aiErrorMessage}</p>
+              <span className="text-[11px] text-rose-300/80 block font-mono">
+                Regla SENA: Ningún fallo de la IA genera aprobación automática ni puntuaciones ficticias. El proyecto se preserva en su estado actual para evaluación manual por el instructor.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setAiErrorMessage(null)}
+            className="text-rose-400 hover:text-white text-xs font-bold px-2 py-1 bg-rose-900/40 rounded-lg hover:bg-rose-900/60"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {/* AI Advisory Suggestion Banner (Nivel 2 - No vinculante) */}
+      {aiSuggestion && (
+        <div className="bg-indigo-950/50 border border-indigo-500/40 rounded-2xl p-4 space-y-3 text-xs text-indigo-200 shadow-xl animate-in fade-in">
+          <div className="flex items-center justify-between border-b border-indigo-500/30 pb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-300" />
+              <strong className="text-white font-bold uppercase tracking-wider text-[11px]">
+                Propuesta Orientativa Sugerida por IA (Nivel 2 - Asistencia Pedagógica)
+              </strong>
+            </div>
+            <span className="text-[10px] font-mono bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30">
+              Juicio propuesto: <strong>{aiSuggestion.juicioSugerido}</strong> (Sujeto a decisión del instructor)
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+            <div className="bg-slate-900/80 p-3 rounded-xl border border-indigo-500/20">
+              <span className="font-bold text-emerald-300 block mb-1">Borrador Producto (Matrices/BSC):</span>
+              <p className="text-slate-300 leading-relaxed italic">{aiSuggestion.observacionProducto || 'Sin observaciones de producto generadas.'}</p>
+            </div>
+            <div className="bg-slate-900/80 p-3 rounded-xl border border-indigo-500/20">
+              <span className="font-bold text-indigo-300 block mb-1">Borrador Desempeño (Sustentación):</span>
+              <p className="text-slate-300 leading-relaxed italic">{aiSuggestion.observacionDesempeno || 'Sin observaciones de desempeño generadas.'}</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
+            <span className="text-[10px] text-slate-400">
+              La IA no emite dictámenes definitivos. Usted como instructor debe revisar, validar y decidir.
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAiSuggestion(null)}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+              >
+                Descartar Sugerencia
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyAiSuggestion}
+                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow"
+              >
+                Copiar Observaciones al Formulario
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Notification Alert */}
+      {saveNotification && (
+        <div className="bg-emerald-950/60 border border-emerald-500/60 rounded-2xl p-4 flex items-center justify-between gap-3 text-xs text-emerald-200 shadow-xl animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span>{saveNotification}</span>
+          </div>
+          <button
+            onClick={() => setSaveNotification(null)}
+            className="text-emerald-400 hover:text-white text-xs font-bold px-2 py-1 bg-emerald-900/40 rounded-lg hover:bg-emerald-900/60"
+          >
+            Entendido
+          </button>
+        </div>
+      )}
+
       {/* Instructor Identification & Final Decision Bar */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-xl space-y-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-700 pb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs w-full md:w-auto">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-700 pb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs w-full lg:w-auto">
             <div>
               <label className="text-slate-400 font-medium block mb-1">Instructor Evaluador</label>
               <input
                 type="text"
                 value={instructorEvaluation.instructorName}
                 onChange={(e) => handleUpdateEvaluation({ instructorName: e.target.value })}
-                className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-medium focus:border-indigo-500 focus:outline-none"
+                placeholder="Nombre y Apellidos del Instructor"
+                className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-medium focus:border-indigo-500 focus:outline-none w-full"
               />
             </div>
             <div>
@@ -243,19 +873,20 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
                 type="text"
                 value={instructorEvaluation.instructorDocument}
                 onChange={(e) => handleUpdateEvaluation({ instructorDocument: e.target.value })}
-                placeholder="No. Documento"
-                className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-mono focus:border-indigo-500 focus:outline-none"
+                placeholder="No. Documento C.C."
+                className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-mono focus:border-indigo-500 focus:outline-none w-full"
               />
             </div>
           </div>
 
-          {/* Final Judgment Switcher */}
-          <div className="flex flex-col items-start md:items-end gap-1.5">
-            <span className="text-xs text-slate-400 font-medium">Juicio Evaluativo Definitivo:</span>
-            <div className="flex items-center gap-2">
+          {/* Final Judgment Switcher (3 options: Aprobado, No Aprobado, Pendiente) */}
+          <div className="flex flex-col items-start lg:items-end gap-1.5 w-full lg:w-auto">
+            <span className="text-xs text-slate-400 font-medium">Juicio Evaluativo Oficial (Decisión Exclusiva del Instructor):</span>
+            <div className="flex items-center gap-2 flex-wrap">
               <button
+                type="button"
                 onClick={() => handleUpdateEvaluation({ finalJudgment: 'APROBADO' })}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                   instructorEvaluation.finalJudgment === 'APROBADO'
                     ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-950/60 ring-2 ring-emerald-500/40'
                     : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-white'
@@ -265,12 +896,13 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
                 <span>APROBADO</span>
               </button>
               <button
+                type="button"
                 onClick={() =>
                   handleUpdateEvaluation({
                     finalJudgment: 'NO APROBADO (CON PLAN DE MEJORAMIENTO)',
                   })
                 }
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                   instructorEvaluation.finalJudgment.includes('NO APROBADO')
                     ? 'bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-950/60 ring-2 ring-rose-500/40'
                     : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-white'
@@ -278,6 +910,22 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
               >
                 <AlertTriangle className="w-4 h-4" />
                 <span>NO APROBADO (MEJORAMIENTO)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleUpdateEvaluation({
+                    finalJudgment: 'PENDIENTE DE EVALUACIÓN',
+                  })
+                }
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  instructorEvaluation.finalJudgment === 'PENDIENTE DE EVALUACIÓN'
+                    ? 'bg-amber-600 text-white border-amber-500 shadow-lg shadow-amber-950/60 ring-2 ring-amber-500/40'
+                    : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span>PENDIENTE DE EVALUACIÓN</span>
               </button>
             </div>
           </div>
@@ -300,9 +948,10 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
                 min="0"
                 max="100"
                 value={instructorEvaluation.productEvidenceScore}
-                onChange={(e) =>
-                  handleUpdateEvaluation({ productEvidenceScore: Number(e.target.value) || 0 })
-                }
+                onChange={(e) => {
+                  const val = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                  handleUpdateEvaluation({ productEvidenceScore: val });
+                }}
                 className="w-16 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-center font-mono font-bold text-lg text-emerald-400 focus:outline-none"
               />
               <span className="text-slate-400 text-xs font-mono">/ 100</span>
@@ -324,15 +973,59 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
                 min="0"
                 max="100"
                 value={instructorEvaluation.performanceEvidenceScore}
-                onChange={(e) =>
-                  handleUpdateEvaluation({
-                    performanceEvidenceScore: Number(e.target.value) || 0,
-                  })
-                }
+                onChange={(e) => {
+                  const val = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                  handleUpdateEvaluation({ performanceEvidenceScore: val });
+                }}
                 className="w-16 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-center font-mono font-bold text-lg text-indigo-400 focus:outline-none"
               />
               <span className="text-slate-400 text-xs font-mono">/ 100</span>
             </div>
+          </div>
+        </div>
+
+        {/* Definitive Evaluation Save Bar */}
+        <div className="pt-3 border-t border-slate-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/50 -mx-5 -mb-5 p-4 rounded-b-2xl">
+          <div className="flex items-center gap-2 text-xs">
+            {instructorEvaluation.isDefinitiveSaved ? (
+              <span className="bg-emerald-950 text-emerald-400 font-bold px-3 py-1 rounded-lg border border-emerald-500/40 flex items-center gap-1.5 font-mono">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>EVALUACIÓN DEFINITIVA GUARDADA • PENDIENTE DE FIRMA FÍSICA</span>
+              </span>
+            ) : (
+              <span className="bg-amber-950 text-amber-400 font-bold px-3 py-1 rounded-lg border border-amber-500/40 flex items-center gap-1.5 font-mono">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <span>ESTADO: BORRADOR PRELIMINAR (SIN GUARDADO DEFINITIVO)</span>
+              </span>
+            )}
+            {instructorEvaluation.lastModifiedAt && (
+              <span className="text-slate-400 font-mono text-[10px] hidden md:inline">
+                Último registro: {new Date(instructorEvaluation.lastModifiedAt).toLocaleString('es-CO')}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {instructorEvaluation.isDefinitiveSaved ? (
+              <button
+                type="button"
+                onClick={handleUnlockEvaluation}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+                title="Habilitar edición de la evaluación guardada"
+              >
+                <Unlock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Habilitar Modificación</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveDefinitiveEvaluation}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-1.5 hover:scale-[1.02]"
+              >
+                <Save className="w-4 h-4 text-emerald-200" />
+                <span>Guardar Evaluación Definitiva</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -547,6 +1240,97 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
           <span>Ver y Descargar Reporte / Acta Oficial SENA</span>
         </button>
       </div>
+
+      {/* Modal de Reapertura Autorizada por Instructor */}
+      {isReopenModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+                  <Unlock className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">
+                    Reapertura Pedagógica Autorizada
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    GAES {reopenTargetProject.gaesNumber} • {reopenTargetProject.company?.name || 'Empresa Asignada'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsReopenModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-amber-950/30 border border-amber-500/30 rounded-xl p-3.5 text-xs text-amber-200/90 space-y-1.5">
+              <p className="font-semibold flex items-center gap-1.5 text-amber-300">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Protocolo de Integridad Académica SENA</span>
+              </p>
+              <p className="text-[11px] leading-relaxed text-amber-200/80">
+                Este proyecto cuenta con evaluación registrada y bloqueo de seguridad. La reapertura habilitará nuevamente la edición para los integrantes de este GAES. Quedará registrada de forma inmutable la justificación pedagógica, su usuario institucional y la marca de tiempo oficial.
+              </p>
+            </div>
+
+            {reopenError && (
+              <div className="bg-rose-950/50 border border-rose-500/50 text-rose-300 text-xs p-3 rounded-xl flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+                <span>{reopenError}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 block">
+                Motivo / Justificación Pedagógica Obligatoria:
+              </label>
+              <textarea
+                rows={4}
+                value={reopenReasonText}
+                onChange={(e) => setReopenReasonText(e.target.value)}
+                placeholder="Ej. Plan de Mejoramiento Formativo concertado según Reglamento del Aprendiz SENA (Acuerdo 007/2012) para ajustar formulación de objetivos estratégicos del BSC..."
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl p-3 text-xs text-white placeholder-slate-500 outline-none leading-relaxed"
+              />
+              <span className="text-[10px] text-slate-400 block">
+                Mínimo recomendado: describir la actividad pedagógica o correctiva acordada.
+              </span>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsReopenModalOpen(false)}
+                disabled={isSubmittingReopen}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReopen}
+                disabled={isSubmittingReopen}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-lg shadow-amber-950/50 transition-all disabled:opacity-50"
+              >
+                {isSubmittingReopen ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Registrando Reapertura...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Autorizar y Reabrir Proyecto</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

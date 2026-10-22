@@ -59,14 +59,17 @@ export function exportFinalReportAndMatricesExcel(project: GAESProject) {
     ['PEYEA (Vector Estratégico)', `(${project.peyea?.coordinateX?.toFixed(2) || '0'}, ${project.peyea?.coordinateY?.toFixed(2) || '0'})`, 'Coordenadas (X, Y)', `Cuadrante ${project.peyea?.quadrant || 'Agresivo'}`],
     [''],
     ['5. DICTAMEN EVALUATIVO OFICIAL DEL INSTRUCTOR'],
-    ['Juicio Evaluativo:', project.instructorEvaluation?.finalJudgment || 'APROBADO'],
+    ['Estado del Documento:', (project.instructorEvaluation?.finalJudgment === 'APROBADO' || project.instructorEvaluation?.finalJudgment?.includes('NO APROBADO')) && project.instructorEvaluation?.isDefinitiveSaved ? 'EVALUACIÓN DEFINITIVA REGISTRADA - PENDIENTE DE FIRMA MANUSCRITA DEL INSTRUCTOR' : 'BORRADOR FORMATIVO – PENDIENTE DE EVALUACIÓN'],
+    ['Juicio Evaluativo Oficial:', project.instructorEvaluation?.isDefinitiveSaved ? (project.instructorEvaluation?.finalJudgment || 'PENDIENTE DE EVALUACIÓN') : 'PENDIENTE DE EVALUACIÓN'],
     ['Calificación Evidencias de Producto (60%):', `${project.instructorEvaluation?.productEvidenceScore || 0} / 100 pts`],
     ['Calificación Evidencias de Desempeño (40%):', `${project.instructorEvaluation?.performanceEvidenceScore || 0} / 100 pts`],
     ['Promedio Ponderado Final:', `${Math.round(((project.instructorEvaluation?.productEvidenceScore || 0) * 0.6) + ((project.instructorEvaluation?.performanceEvidenceScore || 0) * 0.4))} / 100 pts`],
-    ['Instructor Asignado:', project.instructorEvaluation?.instructorName || 'Instructor Técnico SENA'],
-    ['Documento Instructor:', project.instructorEvaluation?.instructorDocument || 'C.C. No Registrada'],
-    ['Observación de Producto:', project.instructorEvaluation?.productObservation || 'Cumple con los requisitos técnicos.'],
-    ['Observación de Desempeño:', project.instructorEvaluation?.performanceObservation || 'Sustentación aprobada.'],
+    ['Instructor Responsable:', project.instructorEvaluation?.instructorName || 'Pendiente de Asignación'],
+    ['Documento Instructor:', project.instructorEvaluation?.instructorDocument || 'Pendiente'],
+    ['Fecha de Registro en Plataforma:', project.instructorEvaluation?.evaluatedAt ? new Date(project.instructorEvaluation.evaluatedAt).toLocaleString('es-CO') : 'Pendiente de Registro'],
+    ['Formalización Institucional:', 'Impresión física y firma manuscrita obligatoria del instructor evaluador (Ley 527 de 1999 / SENA)'],
+    ['Observación de Producto:', project.instructorEvaluation?.productObservation || 'Pendiente de evaluación técnica por el instructor.'],
+    ['Observación de Desempeño:', project.instructorEvaluation?.performanceObservation || 'Pendiente de sustentación y evaluación de desempeño.'],
   ];
 
   const wsResumen = XLSX.utils.aoa_to_sheet(resumenRows);

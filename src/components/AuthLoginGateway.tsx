@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { 
-  GraduationCap, 
   Users, 
   UserCheck, 
   Mail, 
   Lock, 
   ShieldCheck, 
   ArrowRight, 
-  Sparkles, 
   AlertCircle,
   Building2,
-  CheckCircle2,
-  HelpCircle
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { AuthUser, UserRole, GAESProject } from '../types';
 import { SENA_LOGO_SVG } from '../assets/senaLogo';
@@ -28,87 +26,92 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
   const [selectedRole, setSelectedRole] = useState<UserRole>('APRENDIZ');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [instructorPin, setInstructorPin] = useState('');
+  const [password, setPassword] = useState('');
+  const [documentNumber, setDocumentNumber] = useState('');
   const [selectedGaesId, setSelectedGaesId] = useState(availableProjects[0]?.id || '');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      setErrorMessage('Por favor ingresa tu correo electrónico para autenticarte.');
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setErrorMessage('Por favor ingresa tu correo electrónico institucional.');
       return;
     }
 
-    // Basic email format check
-    if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
-      setErrorMessage('Ingresa un correo electrónico válido (ejemplo: usuario@sena.edu.co).');
-      return;
+    if (selectedRole === 'APRENDIZ') {
+      if (normalizedEmail.endsWith('@sena.edu.co')) {
+        setErrorMessage('Acceso denegado: El dominio @sena.edu.co es exclusivo para Instructores. Los aprendices deben autenticarse con su cuenta institucional @soy.sena.edu.co.');
+        return;
+      }
+      const apprenticeDomainRegex = /^[a-zA-Z0-9._%+-]+@soy\.sena\.edu\.co$/i;
+      if (!apprenticeDomainRegex.test(normalizedEmail)) {
+        setErrorMessage('Acceso denegado: Para el perfil Aprendiz se requiere obligatoriamente correo institucional @soy.sena.edu.co. Se rechazan correos comerciales (Gmail, Hotmail, Outlook) y dominios no autorizados.');
+        return;
+      }
+      const trimmedDoc = documentNumber.trim();
+      if (!trimmedDoc) {
+        setErrorMessage('Verificación de identidad individual requerida: Debe ingresar su número de documento de identidad (C.C. o T.I.) registrado en la nómina del GAES para impedir accesos no autorizados por simple conocimiento del correo.');
+        return;
+      }
+    } else if (selectedRole === 'INSTRUCTOR') {
+      if (normalizedEmail.endsWith('@soy.sena.edu.co')) {
+        setErrorMessage('Acceso denegado: El dominio @soy.sena.edu.co corresponde a Aprendices. Los instructores deben autenticarse con su cuenta institucional @sena.edu.co.');
+        return;
+      }
+      const instructorDomainRegex = /^[a-zA-Z0-9._%+-]+@sena\.edu\.co$/i;
+      if (!instructorDomainRegex.test(normalizedEmail)) {
+        setErrorMessage('Acceso denegado: Para el perfil Instructor se requiere obligatoriamente correo institucional @sena.edu.co. Se rechazan correos comerciales y dominios no autorizados.');
+        return;
+      }
+      const trimmedPassword = password.trim();
+      if (!trimmedPassword) {
+        setErrorMessage('La contraseña de Instructor es obligatoria. No se permite el acceso sin credenciales.');
+        return;
+      }
     }
 
-    if (selectedRole === 'INSTRUCTOR') {
-      // Instructor validation: if PIN is provided, check or allow default
-      const defaultPin = 'SENA2026';
-      if (instructorPin && instructorPin.trim() !== defaultPin && instructorPin.trim() !== '1234') {
-        setErrorMessage(`PIN incorrecto para rol de Instructor. El PIN institucional por defecto es: ${defaultPin}`);
+    const chosenProj = availableProjects.find((p) => p.id === selectedGaesId) || availableProjects[0];
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password: password.trim(),
+          documentNumber: documentNumber.trim(),
+          role: selectedRole,
+          name: name.trim(),
+          gaesNumber: chosenProj?.gaesNumber || 3,
+          fichaNumber: chosenProj?.fichaNumber || '2687410',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setErrorMessage(data.error || 'Fallo de autenticación en el servidor. Verifique sus credenciales.');
         return;
       }
 
-      const instructorUser: AuthUser = {
-        email: trimmedEmail,
-        name: name.trim() || 'Instructor Técnico SENA',
-        role: 'INSTRUCTOR',
-        regional: 'Regional Valle del Cauca',
-        centerName: 'Centro de Gestión y Desarrollo Agroindustrial',
-        authenticatedAt: new Date().toISOString(),
+      // Successful server-side authentication
+      const authenticatedUser: AuthUser = {
+        ...data.user,
+        token: data.token,
       };
 
-      onLogin(instructorUser);
-    } else {
-      // Aprendiz validation
-      const chosenProj = availableProjects.find((p) => p.id === selectedGaesId) || availableProjects[0];
-      const apprenticeUser: AuthUser = {
-        email: trimmedEmail,
-        name: name.trim() || 'Aprendiz en Gestión Empresarial',
-        role: 'APRENDIZ',
-        fichaNumber: chosenProj?.fichaNumber || '2687410',
-        gaesNumber: chosenProj?.gaesNumber || 3,
-        regional: chosenProj?.regional || 'Regional Valle del Cauca',
-        centerName: chosenProj?.centerName || 'Centro de Gestión y Desarrollo Agroindustrial',
-        authenticatedAt: new Date().toISOString(),
-      };
-
-      onLogin(apprenticeUser);
+      onLogin(authenticatedUser);
+    } catch (err: any) {
+      console.error('Error de autenticación:', err);
+      setErrorMessage('No fue posible comunicarse con el servicio de autenticación del servidor.');
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleQuickDemoInstructor = () => {
-    const instructorUser: AuthUser = {
-      email: 'dalasjv@gmail.com',
-      name: 'Instructor Técnico Evaluador',
-      role: 'INSTRUCTOR',
-      regional: 'Regional Valle del Cauca',
-      centerName: 'Centro de Gestión y Desarrollo Agroindustrial',
-      authenticatedAt: new Date().toISOString(),
-    };
-    onLogin(instructorUser);
-  };
-
-  const handleQuickDemoAprendiz = () => {
-    const chosenProj = availableProjects[0];
-    const apprenticeUser: AuthUser = {
-      email: 'vrestrepo@sena.edu.co',
-      name: 'Valentina Restrepo Henao (Líder GAES 3)',
-      role: 'APRENDIZ',
-      fichaNumber: chosenProj?.fichaNumber || '2687410',
-      gaesNumber: 3,
-      regional: 'Regional Valle del Cauca',
-      centerName: 'Centro de Gestión y Desarrollo Agroindustrial',
-      authenticatedAt: new Date().toISOString(),
-    };
-    onLogin(apprenticeUser);
   };
 
   return (
@@ -126,14 +129,14 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
           </span>
         </div>
         <span className="text-[11px] bg-black/20 px-2 py-0.5 rounded font-mono">
-          Portal Seguro de Acceso
+          Portal Seguro de Autenticación
         </span>
       </div>
 
       {/* Main Authentication Container */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 my-auto">
         <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden space-y-6">
-          {/* Decorative ambient background blur */}
+          {/* Ambient background blur */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -150,7 +153,7 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
                 </span>
               </h1>
               <p className="text-xs text-slate-400 mt-1">
-                Autenticación requerida para acceder al proyecto formativo y las matrices estratégicas.
+                Autenticación y control de acceso institucional con validación de identidad en servidor.
               </p>
             </div>
           </div>
@@ -208,8 +211,8 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
             </div>
             <p className="text-[11px] text-slate-300">
               {selectedRole === 'INSTRUCTOR'
-                ? 'Acceso exclusivo y completo a la pestaña Evaluación Instructor (Paso 6), rúbricas de evidencia, juicio evaluativo oficial y actas institucionales.'
-                : 'Acceso a las Fases 1 a 5 (Registro, Insumos, Matrices Guía 16, Balanced Scorecard y Auditoría). La pestaña de Evaluación Instructor está reservada únicamente para el docente.'}
+                ? 'Acceso autenticado con credenciales seguras. Permite la revisión de evidencias, rúbricas de evaluación, emisión de juicios y generación de actas oficiales.'
+                : 'Acceso a las Fases 1 a 5 de su GAES (Registro, Insumos, Matrices Guía 16, Balanced Scorecard y Auditoría). El panel de evaluación está reservado exclusivamente para el instructor.'}
             </p>
           </div>
 
@@ -229,15 +232,16 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={
                     selectedRole === 'INSTRUCTOR'
-                      ? 'ejemplo@sena.edu.co o dalasjv@gmail.com'
-                      : 'aprendiz@misena.edu.co'
+                      ? 'instructor@sena.edu.co'
+                      : 'aprendiz@soy.sena.edu.co'
                   }
+                  required
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-xs"
                 />
               </div>
             </div>
 
-            {/* Name input (optional) */}
+            {/* Name input */}
             <div>
               <label className="text-slate-300 font-semibold block mb-1.5">
                 Nombre y Apellidos:
@@ -255,7 +259,7 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
             {selectedRole === 'APRENDIZ' && (
               <div>
                 <label className="text-slate-300 font-semibold block mb-1.5">
-                  Selecciona el GAES / Proyecto Formativo:
+                  Selecciona tu GAES Asignado:
                 </label>
                 <div className="relative">
                   <Building2 className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -274,20 +278,45 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
               </div>
             )}
 
-            {/* If Instructor: PIN code */}
+            {/* If Apprentice: Document Number (Identity Verification) */}
+            {selectedRole === 'APRENDIZ' && (
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1.5 flex items-center justify-between">
+                  <span>Número de Documento de Identidad (C.C. / T.I.):</span>
+                  <span className="text-[10px] text-emerald-400 font-normal">Identidad Individual Verificable</span>
+                </label>
+                <div className="relative">
+                  <UserCheck className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={documentNumber}
+                    onChange={(e) => setDocumentNumber(e.target.value)}
+                    placeholder="Ej. 1118293849"
+                    required
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs font-mono"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Control de seguridad: El documento debe coincidir con la nómina oficial del GAES para impedir accesos por mero conocimiento del correo.
+                </p>
+              </div>
+            )}
+
+            {/* If Instructor: Password */}
             {selectedRole === 'INSTRUCTOR' && (
               <div>
                 <label className="text-slate-300 font-semibold block mb-1.5 flex items-center justify-between">
-                  <span>PIN Institucional de Instructor:</span>
-                  <span className="text-[10px] text-indigo-400 font-mono">Por defecto: SENA2026</span>
+                  <span>Contraseña Institucional de Instructor:</span>
+                  <span className="text-[10px] text-indigo-400 font-normal">Requerido</span>
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
-                    value={instructorPin}
-                    onChange={(e) => setInstructorPin(e.target.value)}
-                    placeholder="Ingresa el PIN de Instructor (SENA2026)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Ingresa tu contraseña de instructor"
+                    required
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs"
                   />
                 </div>
@@ -305,41 +334,35 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
             {/* Submit button */}
             <button
               type="submit"
-              className={`w-full text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 hover:scale-[1.01] ${
+              disabled={isLoading}
+              className={`w-full text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 hover:scale-[1.01] disabled:opacity-50 ${
                 selectedRole === 'INSTRUCTOR'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-950'
                   : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-950'
               }`}
             >
-              <span>Autenticarse y Acceder a la Plataforma</span>
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Validando credenciales con el servidor...</span>
+                </>
+              ) : (
+                <>
+                  <span>Autenticarse y Acceder a la Plataforma</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Quick 1-click Test Logins */}
-          <div className="pt-2 border-t border-slate-800 space-y-2 text-center">
-            <span className="text-[11px] text-slate-500 block font-medium">
-              Accesos rápidos para demostración y evaluación:
+          {/* Institutional note */}
+          <div className="pt-2 border-t border-slate-800 space-y-1 text-center">
+            <span className="text-[11px] text-slate-400 block leading-relaxed">
+              Autenticación institucional exclusiva: Aprendices (<strong>@soy.sena.edu.co</strong>) e Instructores (<strong>@sena.edu.co</strong>).
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-              <button
-                type="button"
-                onClick={handleQuickDemoAprendiz}
-                className="bg-slate-950 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 p-2 rounded-xl transition-colors flex items-center justify-center gap-1.5 font-medium"
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Ingresar como Aprendiz</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleQuickDemoInstructor}
-                className="bg-slate-950 hover:bg-slate-800 text-indigo-300 border border-indigo-500/30 p-2 rounded-xl transition-colors flex items-center justify-center gap-1.5 font-medium"
-              >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>Ingresar como Instructor</span>
-              </button>
-            </div>
+            <span className="text-[10px] text-slate-500 block leading-tight">
+              Para producción institucional se requiere vinculación oficial con Microsoft Entra ID / OpenID Connect SENA sin captura de contraseñas locales.
+            </span>
           </div>
         </div>
       </div>

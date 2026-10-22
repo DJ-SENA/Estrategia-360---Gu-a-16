@@ -128,7 +128,7 @@ export const SENA_COMPETENCIAS_ORGANIZACIONALES: CompetenciaOrganizacionalDef[] 
 /**
  * Convierte las definiciones maestras de competencias en los criterios evaluables del instructor
  */
-export const buildInitialInstructorCriteria = (): InstructorCriteria[] => {
+export const buildInitialInstructorCriteria = (evaluated: boolean = false): InstructorCriteria[] => {
   return SENA_COMPETENCIAS_ORGANIZACIONALES.map((comp) => ({
     id: `crit-comp-${comp.codigo}`,
     rapCode: comp.codigo,
@@ -138,9 +138,11 @@ export const buildInitialInstructorCriteria = (): InstructorCriteria[] => {
     nucleoAsociado: comp.nucleoAsociado,
     toolsIncluded: comp.herramientasArticuladas,
     weight: comp.pesoRecomendado,
-    score: comp.puntajePredeterminado,
-    status: 'Cumple',
-    feedback: comp.retroalimentacionPredeterminada,
+    score: evaluated ? comp.puntajePredeterminado : 0,
+    status: evaluated ? 'Cumple' : 'Pendiente de Evaluación',
+    feedback: evaluated
+      ? comp.retroalimentacionPredeterminada
+      : 'Pendiente de evaluación y retroalimentación técnica por el instructor asignado.',
   }));
 };
 

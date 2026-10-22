@@ -3,20 +3,8 @@ import {
   Printer, 
   X, 
   Download, 
-  ShieldCheck, 
-  CheckCircle2, 
-  Award,
-  Layers,
-  FileCheck,
-  Target,
-  Compass,
-  Check,
-  PenTool,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  FileSignature,
-  Sparkles,
+  FileCheck, 
+  Loader2, 
   FileSpreadsheet
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
@@ -29,7 +17,6 @@ import {
   STEP_COMPETENCY_MAPPINGS,
   SENA_COMPETENCIAS_ORGANIZACIONALES 
 } from '../data/learningCompetencies';
-import { DigitalSignaturePad, SignatureMeta } from './DigitalSignaturePad';
 import { exportFinalReportAndMatricesExcel } from '../utils/fullReportExcelExport';
 
 interface PrintReportModalProps {
@@ -37,20 +24,6 @@ interface PrintReportModalProps {
   onClose: () => void;
   project: GAESProject;
 }
-
-const generateDefaultSignatureSvg = (name: string, role: 'INSTRUCTOR' | 'APRENDIZ'): string => {
-  const isInstructor = role === 'INSTRUCTOR';
-  const strokeColor = '#0f172a';
-  const pathD = isInstructor
-    ? 'M 25,60 Q 45,15 75,32 T 115,65 Q 135,22 155,52 T 195,62 Q 235,26 265,58 M 30,78 Q 120,72 275,74'
-    : 'M 30,62 Q 52,22 78,48 T 122,58 Q 148,18 168,62 T 212,48 Q 238,68 268,52 M 35,80 Q 138,76 268,78';
-  
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90">
-    <path d="${pathD}" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="272" cy="54" r="2.5" fill="${strokeColor}"/>
-  </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
 
 export const PrintReportModal: React.FC<PrintReportModalProps> = ({
   isOpen,
@@ -64,35 +37,16 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
   const compReport = calculateCompetenciesProgress(project);
 
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [showSignaturesPanel, setShowSignaturesPanel] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
 
-  // Digital Signatures Data
-  const apprenticeName = project.apprentices[0]?.name || 'Valentina Gómez Ríos';
-  const apprenticeDoc = project.apprentices[0]?.document || '1.098.765.432';
-  const instructorName = project.instructorEvaluation.instructorName || 'Ing. Carlos Mendoza Alarcón';
-  const instructorDoc = project.instructorEvaluation.instructorDocument || '19.458.231 de Bogotá';
+  // Status computation for preliminary draft vs definitive evaluation
+  const isPendingEvaluation =
+    !project.instructorEvaluation ||
+    project.instructorEvaluation.finalJudgment === 'PENDIENTE DE EVALUACIÓN' ||
+    !project.instructorEvaluation.finalJudgment ||
+    !project.instructorEvaluation.isDefinitiveSaved;
 
-  const [instructorSig, setInstructorSig] = useState<string | null>(() =>
-    generateDefaultSignatureSvg(instructorName, 'INSTRUCTOR')
-  );
-  const [instructorSigMeta, setInstructorSigMeta] = useState<SignatureMeta>({
-    signedAt: new Date().toLocaleDateString('es-CO') + ' 10:30 AM',
-    hashToken: `SENA-INST-${project.fichaNumber.slice(-4)}-7A82`,
-    signeeName: instructorName,
-    signeeDocument: instructorDoc,
-    isVerified: true,
-  });
-
-  const [apprenticeSig, setApprenticeSig] = useState<string | null>(() =>
-    generateDefaultSignatureSvg(apprenticeName, 'APRENDIZ')
-  );
-  const [apprenticeSigMeta, setApprenticeSigMeta] = useState<SignatureMeta>({
-    signedAt: new Date().toLocaleDateString('es-CO') + ' 09:15 AM',
-    hashToken: `SENA-GAES-${project.gaesNumber}-3B91`,
-    signeeName: apprenticeName,
-    signeeDocument: apprenticeDoc,
-    isVerified: true,
-  });
+  const instructorName = project.instructorEvaluation?.instructorName || 'Instructor Técnico Evaluador';
 
   const handlePrint = () => {
     window.print();
@@ -146,8 +100,6 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
     }
   };
 
-  const [isExportingExcel, setIsExportingExcel] = useState(false);
-
   const handleExportExcel = () => {
     setIsExportingExcel(true);
     try {
@@ -178,22 +130,22 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Toggle Signatures Panel */}
-              <button
-                type="button"
-                onClick={() => setShowSignaturesPanel(!showSignaturesPanel)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-colors ${
-                  showSignaturesPanel
-                    ? 'bg-slate-900 text-white border-slate-900 shadow'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
-                }`}
-              >
-                <FileSignature className="w-4 h-4 text-emerald-600" />
-                <span>{showSignaturesPanel ? 'Ocultar Firmador' : 'Firmas Digitales (2)'}</span>
-                {showSignaturesPanel ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
+              {/* Document Status Badge */}
+              <div className="font-mono text-xs">
+                {isPendingEvaluation ? (
+                  <span className="text-amber-900 bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5">
+                    <span>⚠️</span>
+                    <span>BORRADOR FORMATIVO – PENDIENTE DE EVALUACIÓN</span>
+                  </span>
+                ) : (
+                  <span className="text-blue-900 bg-blue-100 border border-blue-300 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5">
+                    <FileCheck className="w-4 h-4 text-blue-700" />
+                    <span>PENDIENTE DE FIRMA MANUSCRITA DEL INSTRUCTOR</span>
+                  </span>
+                )}
+              </div>
 
-              {/* Download PDF with digital signatures */}
+              {/* Download PDF for Physical Signing */}
               <button
                 type="button"
                 onClick={handleGeneratePDF}
@@ -208,7 +160,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    <span>Descargar Archivo PDF</span>
+                    <span>Descargar PDF para Firma Física</span>
                   </>
                 )}
               </button>
@@ -255,70 +207,6 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </button>
             </div>
           </div>
-
-          {/* Collapsible Digital Signature Studio Drawer */}
-          {showSignaturesPanel && (
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-300 space-y-3 animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                <div className="flex items-center gap-2">
-                  <PenTool className="w-4 h-4 text-emerald-700" />
-                  <span className="font-bold text-xs text-slate-900">
-                    Estudio de Firmas Digitales • Validez Formal de Entrega (Ley 527 de 1999)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono font-semibold">
-                    ✓ Ambas Rúbricas Certificadas
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Pad Instructor */}
-                <DigitalSignaturePad
-                  title="Firma Digital del Instructor Técnico"
-                  roleBadge="INSTRUCTOR SENA"
-                  signeeName={instructorName}
-                  signeeDocument={`C.C. ${instructorDoc}`}
-                  signeeSubtitle="Instructor Técnico de Formación Profesional - SENA"
-                  initialSignature={instructorSig}
-                  onSignatureChange={(url, meta) => {
-                    setInstructorSig(url);
-                    setInstructorSigMeta(meta);
-                  }}
-                  accentColor="emerald"
-                />
-
-                {/* Pad Aprendiz */}
-                <DigitalSignaturePad
-                  title="Firma Digital del Aprendiz (Entrega Formal)"
-                  roleBadge="LÍDER GAES"
-                  signeeName={apprenticeName}
-                  signeeDocument={`Doc: ${apprenticeDoc}`}
-                  signeeSubtitle={`Líder GAES No. ${project.gaesNumber} • Tecnólogo en Gestión Empresarial`}
-                  initialSignature={apprenticeSig}
-                  onSignatureChange={(url, meta) => {
-                    setApprenticeSig(url);
-                    setApprenticeSigMeta(meta);
-                  }}
-                  accentColor="blue"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200">
-                <span>
-                  💡 Puede trazar con mouse o pantalla táctil, o hacer clic en <strong>"Estampar Rúbrica Oficial"</strong> para aplicar el sello caligráfico institucional.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowSignaturesPanel(false)}
-                  className="text-emerald-700 font-semibold hover:underline"
-                >
-                  Listo, ver en el documento ➔
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* PRINTABLE CONTENT WITH ID FOR HTML2CANVAS */}
@@ -348,6 +236,29 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               {project.programName} • {project.centerName} • {project.regional}
             </p>
           </div>
+
+          {/* Corrección N.º 3 & 4: Identificación obligatoria de estado del documento */}
+          {isPendingEvaluation ? (
+            <div className="bg-amber-50 border-2 border-dashed border-amber-600 rounded-xl p-3.5 text-center my-2 shadow-sm">
+              <div className="text-amber-900 font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+                <span>⚠️</span>
+                <span>BORRADOR FORMATIVO – PENDIENTE DE EVALUACIÓN</span>
+              </div>
+              <p className="text-amber-800 text-[11px] mt-1 font-medium">
+                Este reporte es un documento de trabajo académico preliminar. No constituye acta definitiva de evaluación hasta que el instructor técnico emita y guarde su dictamen oficial en la plataforma y proceda con la formalización física mediante impresión y firma manuscrita.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-blue-50 border border-blue-300 rounded-xl p-2.5 text-center my-2 shadow-sm">
+              <div className="text-blue-950 font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5">
+                <span>📋</span>
+                <span>EVALUACIÓN DEFINITIVA REGISTRADA • PENDIENTE DE FIRMA MANUSCRITA DEL INSTRUCTOR</span>
+              </div>
+              <p className="text-blue-800 text-[10px] mt-0.5">
+                Dictamen registrado en plataforma por el instructor {instructorName}. Para formalización y archivo oficial, imprima este documento para la firma manuscrita física institucional.
+              </p>
+            </div>
+          )}
 
           {/* Quick Notice for External Excel Analysis for GAES */}
           <div className="no-print bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 border border-teal-200 rounded-xl p-3 flex items-center justify-between gap-3 text-xs shadow-sm">
@@ -696,12 +607,14 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </span>
               <span
                 className={`text-xs font-bold font-mono px-3 py-1 rounded border ${
-                  project.instructorEvaluation.finalJudgment === 'APROBADO'
+                  project.instructorEvaluation?.finalJudgment === 'APROBADO'
                     ? 'bg-emerald-100 text-emerald-800 border-emerald-400'
+                    : project.instructorEvaluation?.finalJudgment === 'PENDIENTE DE EVALUACIÓN' || !project.instructorEvaluation?.finalJudgment
+                    ? 'bg-amber-100 text-amber-900 border-amber-400'
                     : 'bg-rose-100 text-rose-800 border-rose-400'
                 }`}
               >
-                JUICIO: {project.instructorEvaluation.finalJudgment}
+                JUICIO: {project.instructorEvaluation?.finalJudgment || 'PENDIENTE DE EVALUACIÓN'}
               </span>
             </div>
 
@@ -808,95 +721,52 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
             </div>
 
-            {/* Firmas oficiales y Certificación Digital de Entrega Formal */}
+            {/* Corrección N.º 4: Formalización Física del Informe Final (Sin firmas digitales automáticas) */}
             <div className="pt-6 mt-4 border-t-2 border-slate-300 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                  <FileCheck className="w-4 h-4 text-slate-700" />
                   <span className="font-bold text-[11px] uppercase text-slate-900">
-                    Certificación de Radicación y Firmas Digitales de Entrega Formal
+                    Formalización Documental e Institucional de la Evaluación (Guía 16)
                   </span>
                 </div>
                 <span className="text-[9px] font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-300">
-                  Ley 527 de 1999 • Cierre Oficial Guía 16
+                  {isPendingEvaluation
+                    ? 'ESTADO: BORRADOR FORMATIVO'
+                    : 'ESTADO: PENDIENTE DE FIRMA MANUSCRITA'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-8 text-[10px]">
-                {/* Instructor Signature Box */}
-                <div className="border border-slate-200 rounded-xl p-3 bg-white space-y-2 text-center shadow-sm">
-                  <div className="h-20 flex items-center justify-center overflow-hidden bg-slate-50/50 rounded-lg border border-slate-100">
-                    {instructorSig ? (
-                      <img
-                        src={instructorSig}
-                        alt="Firma Digital Instructor Técnico SENA"
-                        className="max-h-20 max-w-full object-contain mx-auto"
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-slate-400 italic text-[10px]">
-                        [Pendiente de firma digital del instructor]
-                      </div>
-                    )}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] text-slate-600 leading-relaxed">
+                <strong>Nota Institucional:</strong> Conforme a las directrices de Formación Profesional Integral del SENA, este documento se formaliza exclusivamente mediante impresión física y firma manuscrita del instructor evaluador tras la revisión presencial o virtual autorizada de evidencias y la sustentación del GAES.
+              </div>
+
+              <div className="max-w-xl mx-auto text-[10px] pt-2 w-full">
+                {/* Bloque exclusivo de formalización y firma física del instructor SENA */}
+                <div className="border border-slate-300 rounded-xl p-5 bg-white space-y-3 shadow-sm">
+                  <div className="text-[11px] font-bold text-slate-900 uppercase border-b border-slate-200 pb-1 text-center">
+                    Instructor Técnico Evaluador SENA
                   </div>
-                  <div className="border-t-2 border-slate-800 w-48 mx-auto pt-1"></div>
-                  <strong className="block text-[11px] text-slate-900 leading-tight">
-                    {instructorName}
-                  </strong>
-                  <span className="text-slate-600 block text-[9px]">
-                    Instructor Técnico • Formación Profesional Integral SENA
-                  </span>
-                  <span className="text-slate-500 block text-[9px] font-mono">
-                    C.C. {instructorDoc}
-                  </span>
-
-                  {instructorSig && (
-                    <div className="mt-2 pt-1 border-t border-slate-100 text-[8px] text-emerald-900 bg-emerald-50/90 p-1.5 rounded-lg border border-emerald-200/60 font-mono text-left space-y-0.5">
-                      <div className="font-bold flex items-center gap-1 text-emerald-800">
-                        <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                        <span>FIRMADO DIGITALMENTE POR INSTRUCTOR</span>
+                  <div className="space-y-2 text-slate-800">
+                    <p><strong>Nombre del instructor:</strong> {project.instructorEvaluation?.instructorName ? project.instructorEvaluation.instructorName : '____________________________________'}</p>
+                    <p><strong>Identificación institucional:</strong> {project.instructorEvaluation?.instructorDocument ? `C.C. ${project.instructorEvaluation.instructorDocument}` : '______________________________'}</p>
+                    <div className="pt-4 pb-2">
+                      <div className="h-16 border-b-2 border-slate-800 flex items-end justify-center pb-1 bg-slate-50/50 rounded-t">
+                        <span className="text-slate-400 text-[9px] italic">
+                          [Espacio en blanco para firma manuscrita física del instructor]
+                        </span>
                       </div>
-                      <div className="text-slate-600">Fecha: {instructorSigMeta.signedAt}</div>
-                      <div className="text-slate-500 truncate">Token: {instructorSigMeta.hashToken}</div>
+                      <p className="text-center font-semibold text-slate-700 mt-1">Firma manuscrita: ______________________________</p>
                     </div>
-                  )}
-                </div>
-
-                {/* Apprentice Signature Box */}
-                <div className="border border-slate-200 rounded-xl p-3 bg-white space-y-2 text-center shadow-sm">
-                  <div className="h-20 flex items-center justify-center overflow-hidden bg-slate-50/50 rounded-lg border border-slate-100">
-                    {apprenticeSig ? (
-                      <img
-                        src={apprenticeSig}
-                        alt="Firma Digital Aprendiz Líder GAES"
-                        className="max-h-20 max-w-full object-contain mx-auto"
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-slate-400 italic text-[10px]">
-                        [Pendiente de firma digital del aprendiz]
-                      </div>
-                    )}
+                    <p><strong>Fecha de firma:</strong> _________________________________</p>
                   </div>
-                  <div className="border-t-2 border-slate-800 w-48 mx-auto pt-1"></div>
-                  <strong className="block text-[11px] text-slate-900 leading-tight">
-                    {apprenticeName}
-                  </strong>
-                  <span className="text-slate-600 block text-[9px]">
-                    Líder GAES No. {project.gaesNumber} • Tecnólogo en Gestión Empresarial
-                  </span>
-                  <span className="text-slate-500 block text-[9px] font-mono">
-                    Doc: {apprenticeDoc}
-                  </span>
-
-                  {apprenticeSig && (
-                    <div className="mt-2 pt-1 border-t border-slate-100 text-[8px] text-blue-900 bg-blue-50/90 p-1.5 rounded-lg border border-blue-200/60 font-mono text-left space-y-0.5">
-                      <div className="font-bold flex items-center gap-1 text-blue-800">
-                        <Check className="w-3 h-3 text-blue-600 shrink-0" />
-                        <span>ENTREGA FORMAL RADICADA POR EL APRENDIZ</span>
-                      </div>
-                      <div className="text-slate-600">Fecha: {apprenticeSigMeta.signedAt}</div>
-                      <div className="text-slate-500 truncate">Token: {apprenticeSigMeta.hashToken}</div>
-                    </div>
-                  )}
+                  <div className="mt-2 pt-2 border-t border-slate-200 text-center">
+                    <span className="text-[9px] font-mono font-bold text-slate-600 block">
+                      {isPendingEvaluation
+                        ? 'BORRADOR FORMATIVO – PENDIENTE DE EVALUACIÓN'
+                        : 'PENDIENTE DE FIRMA MANUSCRITA DEL INSTRUCTOR'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -916,8 +786,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                   </div>
                 </div>
                 <div className="text-right font-mono text-[8px] text-slate-500 shrink-0">
-                  <div className="font-bold text-slate-700">RADICADO: SENA-ACTA-{project.fichaNumber}-G{project.gaesNumber}</div>
-                  <div className="text-emerald-700 font-semibold">INTEGRIDAD: SHA256-VERIFIED-LEGAL</div>
+                  <div className="font-bold text-slate-700">RADICADO: SENA-GUIA16-F{project.fichaNumber}-G{project.gaesNumber}</div>
+                  <div className="text-slate-600">FORMALIZACIÓN: IMPRESIÓN Y FIRMA FÍSICA OBLIGATORIA</div>
                 </div>
               </div>
             </div>

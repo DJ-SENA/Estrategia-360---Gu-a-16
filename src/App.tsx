@@ -78,7 +78,34 @@ export default function App() {
   const [lastSavedTime, setLastSavedTime] = useState<string>('Ahora');
   const [notification, setNotification] = useState<string | null>(null);
 
-  // Sync projects with localStorage
+  // Load centralized projects from server
+  useEffect(() => {
+    if (!currentUser?.token) return;
+
+    fetch('/api/projects', {
+      headers: {
+        Authorization: `Bearer ${currentUser.token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Error al cargar proyectos del servidor');
+        return res.json();
+      })
+      .then((data) => {
+        if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
+          setProjects(data.projects);
+          if (currentUser.role === 'APRENDIZ' && currentUser.gaesNumber) {
+            const userProj = data.projects.find((p: GAESProject) => p.gaesNumber === currentUser.gaesNumber);
+            if (userProj) setCurrentProjectId(userProj.id);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn('Utilizando caché local de proyectos:', err);
+      });
+  }, [currentUser]);
+
+  // Sync projects with localStorage as secondary backup
   useEffect(() => {
     localStorage.setItem('sena_guia16_projects', JSON.stringify(projects));
     const now = new Date();
@@ -94,6 +121,43 @@ export default function App() {
     }
   }, [currentUser]);
 
+  // Verify session validity with server on startup (anti-tamper)
+  useEffect(() => {
+    if (!currentUser?.token) return;
+
+    fetch('/api/auth/verify-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${currentUser.token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Sesión no autorizada');
+        return res.json();
+      })
+      .then((data) => {
+        if (!data.valid || !data.user) {
+          setCurrentUser(null);
+          setIsInstructorMode(false);
+          localStorage.removeItem('sena_guia16_auth_user');
+          showNotification('Sesión finalizada por el servidor. Por favor inicie sesión nuevamente.');
+        } else {
+          // Sync server authoritative user role
+          if (data.user.role !== currentUser.role) {
+            setCurrentUser((prev) => prev ? { ...prev, role: data.user.role } : null);
+            setIsInstructorMode(data.user.role === 'INSTRUCTOR');
+          }
+        }
+      })
+      .catch(() => {
+        // In case token is expired or altered in localStorage
+        setCurrentUser(null);
+        setIsInstructorMode(false);
+        localStorage.removeItem('sena_guia16_auth_user');
+      });
+  }, []);
+
   // Strict role-based protection: apprentices never see or access step 6
   useEffect(() => {
     if (currentUser?.role === 'APRENDIZ') {
@@ -102,8 +166,15 @@ export default function App() {
         setCurrentStep(5);
         showNotification('Acceso restringido: La pestaña Evaluación Instructor es de uso exclusivo para el docente.');
       }
+      // Lock apprentice to their own assigned GAES
+      if (currentUser.gaesNumber) {
+        const userGaesProj = projects.find((p) => p.gaesNumber === currentUser.gaesNumber);
+        if (userGaesProj && currentProjectId !== userGaesProj.id) {
+          setCurrentProjectId(userGaesProj.id);
+        }
+      }
     }
-  }, [currentUser, currentStep]);
+  }, [currentUser, currentStep, projects, currentProjectId]);
 
   const currentProject =
     projects.find((p) => p.id === currentProjectId) || projects[0] || mockProjectAgroLacteos;
@@ -134,32 +205,158 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (currentUser?.token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        });
+      } catch {}
+    }
     setCurrentUser(null);
     setIsInstructorMode(false);
     setCurrentStep(1);
     localStorage.removeItem('sena_guia16_auth_user');
-    showNotification('Sesión cerrada. Por favor autentícate con tu correo para continuar.');
+    showNotification('Sesión cerrada correctamente. Autentícate para continuar.');
   };
 
-  const handleUpdateCurrentProject = (updated: Partial<GAESProject>) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id === currentProject.id) {
-          return {
-            ...p,
-            ...updated,
-            lastUpdated: new Date().toISOString(),
-          };
+  const handleSelectProject = (projectId: string) => {
+    // If apprentice, only permit selecting their own assigned GAES
+    if (currentUser?.role === 'APRENDIZ') {
+      const userGaes = projects.find((p) => p.gaesNumber === currentUser.gaesNumber);
+      if (userGaes && projectId !== userGaes.id) {
+        showNotification(`Acceso restringido: Sólo puedes consultar el proyecto de tu GAES ${currentUser.gaesNumber}.`);
+        return;
+      }
+    }
+    setCurrentProjectId(projectId);
+  };
+
+  const handleUpdateCurrentProject = async (
+    updated: Partial<GAESProject>,
+    changeSummary?: string,
+    phaseIntervened?: number,
+    componentIntervened?: string
+  ) => {
+    // If apprentice attempts to alter instructor evaluation, block and discard
+    if (currentUser?.role === 'APRENDIZ' && 'instructorEvaluation' in updated) {
+      const { instructorEvaluation: _, ...allowedUpdates } = updated;
+      updated = allowedUpdates;
+      showNotification('Acceso denegado: Los aprendices no tienen autorización para modificar la evaluación del instructor.');
+    }
+
+    const currentProj = projects.find((p) => p.id === currentProjectId) || currentProject;
+    const clientVersion = currentProj.version || 1;
+
+    // Optimistic local update
+    const optimisticProj = {
+      ...currentProj,
+      ...updated,
+      lastUpdated: new Date().toISOString(),
+    };
+    setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? optimisticProj : p)));
+
+    if (!currentUser?.token) return;
+
+    try {
+      const response = await fetch(`/api/projects/${currentProj.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+        body: JSON.stringify({
+          updatedProject: updated,
+          clientVersion,
+          changeSummary,
+          phaseIntervened: phaseIntervened || currentStep,
+          componentIntervened,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (response.status === 409) {
+        showNotification('Conflicto de concurrencia: Otro integrante del GAES modificó y guardó este proyecto recientemente.');
+        if (resData.serverProject) {
+          setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? resData.serverProject : p)));
         }
-        return p;
-      })
-    );
+        return;
+      }
+
+      if (response.status === 423) {
+        showNotification('Proyecto bloqueado: La evaluación definitiva ya ha sido registrada por el instructor.');
+        return;
+      }
+
+      if (resData.success && resData.project) {
+        setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? resData.project : p)));
+      }
+    } catch (err) {
+      console.error('Error al sincronizar con el servidor:', err);
+    }
   };
 
-  const handleNewProject = () => {
+  const handleReopenProject = async (projectId: string, reason: string) => {
+    if (!currentUser?.token || currentUser.role !== 'INSTRUCTOR') {
+      showNotification('Acceso denegado: Solo el instructor puede autorizar la reapertura.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/reopen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+        body: JSON.stringify({ reason }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        showNotification(data.error || 'Error al reabrir el proyecto.');
+        return;
+      }
+
+      setProjects((prev) => prev.map((p) => (p.id === projectId ? data.project : p)));
+      showNotification('Proyecto reabierto exitosamente para plan de mejoramiento.');
+    } catch (err) {
+      showNotification('Error de conexión al reabrir el proyecto.');
+    }
+  };
+
+  const handleNewProject = async () => {
     const nextNumber = projects.length + 1;
     const newProj = createBlankGAESProject(nextNumber, currentProject.fichaNumber || '2687410');
+
+    if (currentUser?.token) {
+      try {
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+          body: JSON.stringify(newProj),
+        });
+        const data = await response.json();
+        if (data.success && data.project) {
+          setProjects((prev) => [data.project, ...prev]);
+          setCurrentProjectId(data.project.id);
+          setCurrentStep(1);
+          showNotification(`Se ha registrado el GAES ${nextNumber} exitosamente en el servidor.`);
+          return;
+        }
+      } catch (err) {
+        console.error('Error al crear proyecto en servidor:', err);
+      }
+    }
+
     setProjects((prev) => [newProj, ...prev]);
     setCurrentProjectId(newProj.id);
     setCurrentStep(1);
@@ -409,6 +606,7 @@ export default function App() {
           <Step6_InstructorPanel
             project={currentProject}
             projectsList={projects}
+            currentUser={currentUser}
             onSelectProject={(id) => {
               setCurrentProjectId(id);
               showNotification(`Seleccionado GAES ${projects.find((p) => p.id === id)?.gaesNumber} (${projects.find((p) => p.id === id)?.company.name})`);
@@ -416,6 +614,7 @@ export default function App() {
             onUpdateProject={handleUpdateCurrentProject}
             onOpenPrintModal={() => setIsPrintModalOpen(true)}
             onPrevStep={() => setCurrentStep(5)}
+            onReopenProject={handleReopenProject}
           />
         )}
       </main>

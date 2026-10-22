@@ -1,3 +1,5 @@
+import { DeliverablePoint } from '../data/learningGuidesDeliverables';
+
 export type EconomicSector = 'Agropecuario / Agroindustrial' | 'Manufactura / Industrial' | 'Comercial' | 'Servicios / Tecnología';
 export type CompanySize = 'Microempresa (1-10)' | 'Pequeña (11-50)' | 'Mediana (51-200)' | 'Gran Empresa (>200)';
 export type BSCPerspective = 'Financiera' | 'Clientes' | 'Procesos Internos' | 'Aprendizaje y Crecimiento';
@@ -5,9 +7,11 @@ export type BSCPerspective = 'Financiera' | 'Clientes' | 'Procesos Internos' | '
 export type UserRole = 'INSTRUCTOR' | 'APRENDIZ';
 
 export interface AuthUser {
+  id?: string;
   email: string;
   name: string;
   role: UserRole;
+  token?: string;
   documentNumber?: string;
   regional?: string;
   centerName?: string;
@@ -228,6 +232,8 @@ export interface StrategicAuditResult {
 }
 
 // Guía 16: Evaluación del Instructor SENA por Resultados de Aprendizaje (RAP)
+export type EvaluativeJudgment = 'APROBADO' | 'NO APROBADO (CON PLAN DE MEJORAMIENTO)' | 'PENDIENTE DE EVALUACIÓN';
+
 export interface InstructorCriteria {
   id: string;
   rapCode: string; // Código oficial SENA (e.g. 21060100303, 21010100503)
@@ -238,15 +244,27 @@ export interface InstructorCriteria {
   toolsIncluded: string; // Herramientas SENA articuladas
   weight: number; // Porcentaje de ponderación oficial (e.g. 15%)
   score: number; // 0 - 100
-  status: 'Cumple' | 'Por Mejorar' | 'No Evidenciado';
+  status: 'Cumple' | 'Por Mejorar' | 'No Evidenciado' | 'Pendiente de Evaluación';
   feedback: string;
+}
+
+export interface EvaluationAuditRecord {
+  id: string;
+  timestamp: string;
+  action: string;
+  evaluatedBy: string;
+  instructorDocument?: string;
+  judgment: EvaluativeJudgment;
+  productScore: number;
+  performanceScore: number;
+  observationsNote?: string;
 }
 
 export interface InstructorEvaluation {
   evaluatedAt: string;
   instructorName: string;
   instructorDocument: string;
-  finalJudgment: 'APROBADO' | 'NO APROBADO (CON PLAN DE MEJORAMIENTO)';
+  finalJudgment: EvaluativeJudgment;
   productEvidenceScore: number; // 0 - 100
   performanceEvidenceScore: number; // 0 - 100
   criteria: InstructorCriteria[];
@@ -255,9 +273,27 @@ export interface InstructorEvaluation {
   improvementPlanDeadline?: string;
   improvementPlanActions?: string;
   isLocked: boolean;
+  isDefinitiveSaved?: boolean;
+  auditHistory?: EvaluationAuditRecord[];
+  lastModifiedAt?: string;
+  modifiedBy?: string;
 }
 
-import { DeliverablePoint } from '../data/learningGuidesDeliverables';
+export interface AuditContributionRecord {
+  id: string;
+  timestamp: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  gaesNumber: number;
+  fichaNumber: string;
+  phase: number;
+  component: string;
+  operationType: 'CREAR' | 'MODIFICAR' | 'ELIMINAR' | 'EVALUAR' | 'REAPERTURA';
+  previousVersion?: string;
+  newVersion: string;
+  description: string;
+}
 
 // Complete GAES Project State
 export interface GAESProject {
@@ -292,4 +328,10 @@ export interface GAESProject {
   instructorEvaluation: InstructorEvaluation;
   lastUpdated: string;
   currentStep: number; // 1 to 6
+  version?: number;
+  isLocked?: boolean;
+  reopenedAt?: string;
+  reopenedBy?: string;
+  reopenReason?: string;
+  collaborationHistory?: AuditContributionRecord[];
 }
