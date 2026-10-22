@@ -1,5 +1,3477 @@
 [
   {
+    "id": "gaes-72-2687410-1792697703463",
+    "gaesNumber": 72,
+    "fichaNumber": "2687410",
+    "programName": "Tecnólogo en Gestión Empresarial",
+    "centerName": "Centro de Formación SENA",
+    "regional": "Regional SENA",
+    "lastUpdated": "2026-10-22T19:35:03.527Z",
+    "currentStep": 1,
+    "apprentices": [
+      {
+        "id": "app-leader-72",
+        "name": "Camila Andrea Ospina",
+        "document": "10984572",
+        "email": "camila.ospina72@soy.sena.edu.co",
+        "phone": "312 456 7890",
+        "role": "Líder GAES"
+      },
+      {
+        "id": "app-coord-72",
+        "name": "Mateo Alejandro Ríos",
+        "document": "10984672",
+        "email": "mateo.rios72@soy.sena.edu.co",
+        "phone": "312 456 7891",
+        "role": "Coordinador Financiero"
+      }
+    ],
+    "company": {
+      "nit": "901.888.777-2",
+      "ciiuCode": "2220 - Fabricación de artículos de plástico biodegradables",
+      "valueProposition": "Empaques 100% compostables a base de almidón de yuca.",
+      "name": "BioEmpaques del Pacífico 72 S.A.S."
+    },
+    "priorGuides": {
+      "diagnosticSummary": "",
+      "internalValueChain": "",
+      "missionVisionOriginal": {
+        "mission": "",
+        "vision": "",
+        "values": []
+      },
+      "marketStudyFindings": "",
+      "financialHealth": {
+        "annualSales": 0,
+        "grossMarginPercent": 0,
+        "netMarginPercent": 0,
+        "liquidityRatio": 1,
+        "debtRatioPercent": 0
+      },
+      "operationalBottlenecks": "",
+      "uploadedDocumentsSummary": []
+    },
+    "learningGuidesDeliverables": [
+      {
+        "id": "g1-p1",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 1,
+        "descripcion": "Identifique qué tipo de empresa desean crear o que sociedad, y analice la actividad que desarrollará, apoyándose en el enlace para clasificar la actividad económica.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p2",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 2,
+        "descripcion": "Caracterice su empresa: ordene todos los aspectos básicos presentes en su inicio, clase de sociedad, actividad, ubicación, número de socios, número de colaboradores, capital, entre otros aspectos relevantes.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p3",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 3,
+        "descripcion": "Reflexione con su GAES sobre las teorías vistas y tome tres (3) que considere un modelo adecuado para seguir el desarrollo de las actividades empresariales; analice las tendencias y seleccione dos (2) que puedan contribuir a la marcha organizacional adecuada de la empresa creada.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p4",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 4,
+        "descripcion": "Organice las diferentes fases del proceso administrativo y los elementos que lo componen, identificando el desarrollo en su empresa y completando la tabla correspondiente.",
+        "detallesExtra": {
+          "tabla": [
+            {
+              "fase": "Planeación",
+              "elementos_o_acciones": [
+                "Objetivos",
+                "Estrategias",
+                "Programas",
+                "Presupuestos",
+                "Procedimientos"
+              ]
+            },
+            {
+              "fase": "Organización",
+              "elementos_o_acciones": [
+                "División Del Trabajo",
+                "Jerarquización",
+                "Descripción De Funciones",
+                "Coordinación"
+              ]
+            },
+            {
+              "fase": "Dirección",
+              "elementos_o_acciones": [
+                "Toma De Decisiones",
+                "Integración",
+                "Motivación",
+                "Comunicación",
+                "Supervisión"
+              ]
+            },
+            {
+              "fase": "Control",
+              "elementos_o_acciones": [
+                "Establecimiento De Estándares",
+                "Medición",
+                "Corrección",
+                "Retroalimentación"
+              ]
+            }
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p5",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 5,
+        "descripcion": "Presente un gráfico que muestre la relación de los componentes de un sistema abierto de la empresa objeto de estudio y analice cada uno de sus elementos (Insumos/Recursos, Procesos de Transformación, Productos/Resultados, Retroalimentación del Ambiente) y cómo se relacionan entre sí.",
+        "detallesExtra": {
+          "sistemaAbierto": {
+            "insumos_recursos": [
+              "Humanos",
+              "Materiales",
+              "Equipo",
+              "Financieros",
+              "Información"
+            ],
+            "procesos_de_transformacion": {
+              "capacidades_administrativas_y_tecnologicas": [
+                "Planeación",
+                "Organización",
+                "Dirección",
+                "Control",
+                "Tecnología"
+              ]
+            },
+            "productos_resultados": [
+              "Bienes y servicios",
+              "Pérdidas y utilidades",
+              "Desarrollo y satisfacción de los empleados"
+            ],
+            "retroalimentacion": "Retroalimentación del ambiente"
+          }
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p1",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 1,
+        "descripcion": "Analice el entorno empresarial (Macro y microentornos) incluidas las variables externas (Económico, político legal, socio cultural, demografía, tecnológica, ambiental-ecológica) e internas (Entidades reguladoras, proveedores, clientes, competencias), describiendo los sucesos externos e internos que tienen injerencia positiva y negativa en la empresa creada por el GAES.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p2",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 2,
+        "descripcion": "Investigue información del sector y subsector al que pertenece con datos actualizados (crecimiento del sector, aporte al PIB, empleos generados, etc., con fuentes oficiales no anteriores al año 2022 y citación APA).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p3",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 3,
+        "descripcion": "Realice la propuesta de la plataforma estratégica para su proyecto formativo.",
+        "detallesExtra": {
+          "componentesPlataforma": [
+            "Misión - Propuesta que cumpla con los atributos y características.",
+            "Visión - Propuesta que cumpla con los atributos y características.",
+            "Objetivos - Propuesta del objetivo general y los específicos que respondan a sus metas futuras.",
+            "Políticas - Establezca las políticas generales para la empresa objeto de estudio.",
+            "Valores - Propuesta de al menos cinco que cumplan el concepto de valor empresarial.",
+            "Diseñe un Logo inicial - Propuesta que cumpla con los atributos y características.",
+            "Identifique con un Slogan a su empresa - Propuesta que cumpla con los atributos y características."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p4",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 4,
+        "descripcion": "Presente la representación gráfica (organigrama) de la estructura organizacional que como GAES propone, teniendo en cuenta el principio de departamentalización de las cinco principales áreas funcionales (Organigrama Funcional), identificando las funciones propias de cada área en orden jerárquico y de complejidad.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p5",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 5,
+        "descripcion": "Formule el objetivo empresarial por cada área de la empresa, teniendo en cuenta la técnica SMART.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p6",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 6,
+        "descripcion": "Presente el esquema de cadena de valor, relacionando las actividades primarias y secundarias propias de la actividad económica, resaltando aquellas que generan valor y aquellas que requieren fortalecimiento.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p1",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 1,
+        "descripcion": "Diseñe una encuesta como instrumento de recolección de datos (mínimo 15 preguntas) sobre elementos clave en Talento Humano y macroprocesos, aplicándola a al menos 20 personas que laboran o han laborado en empresa privada.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p2",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 2,
+        "descripcion": "Proponga cuál sería el modelo de gestión aplicado y adoptado en su organización.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p3",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 3,
+        "descripcion": "Diseñe un esquema que resuma los cinco macroprocesos para su empresa, y por cada uno realice el diagrama de flujo adecuado con su respectiva explicación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p4",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 4,
+        "descripcion": "Elabore el Plan de Acción indicando la proyección de actividades que realizará durante un (1) año.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p5",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 5,
+        "descripcion": "Diseñe los perfiles de cargo para cada uno de los colaboradores acorde con el organigrama y posteriormente diseñe el manual de funciones.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p6",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 6,
+        "descripcion": "Seleccione un modelo para la evaluación del personal y diséñelo explicando por qué lo adoptaría.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p7",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 7,
+        "descripcion": "Elabore los formatos para seleccionar y contratar el personal (reclutamiento, selección, contrato, inducción).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p8",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 8,
+        "descripcion": "Construya la estructura salarial de la empresa.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p9",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 9,
+        "descripcion": "Proponga el plan de incentivos y beneficios que la empresa ejecutará para sus colaboradores.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p10",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 10,
+        "descripcion": "Elabore el programa de capacitación para el primer año de funcionamiento.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p11",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 11,
+        "descripcion": "Establezca cinco (5) indicadores de gestión que permitan medir la eficiencia en la administración del talento humano.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p1",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 1,
+        "descripcion": "Diseñe un instrumento de recolección que le permita identificar las necesidades y oportunidades para la puesta en marcha de un programa que fortalezca la gestión del clima organizacional.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p2",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 2,
+        "descripcion": "Elabore el diagnóstico preliminar identificando las dimensiones del clima organizacional propuestas por Luc Brunet (1987): pertenencia, trabajo en equipo, motivación y desarrollo, comunicación y retroalimentación, reconocimiento e incentivos, bienestar, seguridad y salud, relaciones humanas, dirección y liderazgo, participación y efectividad.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p3",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 3,
+        "descripcion": "Presente soluciones que fortalezcan el proceso mediante el desarrollo del plan de mejoramiento.",
+        "detallesExtra": {
+          "estructuraPlanMejoramiento": [
+            "Objetivo general",
+            "Debilidad",
+            "Acciones a desarrollar",
+            "Alcance",
+            "Objetivo de la acción a desarrollar",
+            "Meta",
+            "Beneficios",
+            "Recursos (Humanos, Materiales, Financiero)",
+            "Tiempo",
+            "Responsable"
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p4",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 4,
+        "descripcion": "Proponga el Protocolo de manejo de conflictos.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p5",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 5,
+        "descripcion": "Realice un plan de incentivos para la empresa, teniendo en cuenta los cargos y la naturaleza de la organización.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p6",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 6,
+        "descripcion": "Estructure el Manual de Convivencia de la empresa en desarrollo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p7",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 7,
+        "descripcion": "Establezca cinco (5) indicadores de gestión que permitan medir el clima organizacional dentro de la empresa.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p1",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 1,
+        "descripcion": "Diseñe un instrumento de recolección para identificar las necesidades de la empresa para aplicar criterios básicos de SG SST, considerando colaboradores y código CIIU.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p2",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 2,
+        "descripcion": "Genere un diagnóstico preliminar con los resultados obtenidos para iniciar la implementación del SG SST.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p3",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 3,
+        "descripcion": "Explique y argumente el estándar mínimo en el cual se clasifica la empresa propuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p4",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 4,
+        "descripcion": "Realice un listado de riesgos y peligros presentes en la organización identificando áreas y actividades.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p5",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 5,
+        "descripcion": "Proponga la política del SG SST para su empresa.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p6",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 6,
+        "descripcion": "Plantee al menos 5 objetivos para el SG SST.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p7",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 7,
+        "descripcion": "Sugiera un plan de trabajo para la implementación del SG SST (pausas activas, EPP, ARL, extintores/botiquines, seguimiento).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p8",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 8,
+        "descripcion": "Aplique la Matriz de peligros y factores de riesgo (GTC 45) y realice un plan de trabajo/explicación para vigía/COPASST, Brigada de emergencia, Comité de Convivencia Laboral y Comité de Higiene y Seguridad.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p9",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 9,
+        "descripcion": "Establezca al menos cinco (5) indicadores que permitan medir la gestión y el desempeño del SG-SST.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p1",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Analice la situación actual del mercado, comportamiento, representatividad en el PIB y estadísticas del sector productivo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p2",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Analice la oferta (competencia directa y negocios con productos similares, describiendo sus productos y servicios).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p3",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Analice la demanda, tendencias de mercado futuras y ventas pasadas.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p4",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Analice las curvas de oferta y demanda, halle el punto de equilibrio y argumente los resultados.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p5",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Identifique el tipo de elasticidad que tiene la unidad productiva.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p6",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Analice los tipos de mercado (geográfico, tipo de cliente, competencia, tipo de producto, tipo de recurso, no clientes) y su aplicación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p7",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Caracterice y cuantifique el mercado potencial y el objetivo actual de la unidad productiva.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p8",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 8,
+        "descripcion": "Defina las variables de segmentación, establezca el mercado objetivo y describa el perfil del cliente.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p1",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Tipo de producto o servicio seleccionado para el estudio de mercado (registros fotográficos si existen).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p2",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Razones por las cuales seleccionaron ese producto o servicio.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p3",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Realización de la investigación de mercados mediante encuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p4",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Identificación del problema (pregunta específica a responder).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p5",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Diseño de la investigación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p6",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Tipo de investigación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p7",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Población objetivo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p8",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 8,
+        "descripcion": "Metodología de recolección de datos - Encuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p9",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 9,
+        "descripcion": "Diseño del cuestionario de la encuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p10",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 10,
+        "descripcion": "Muestreo respecto a la segmentación del mercado objetivo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p11",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 11,
+        "descripcion": "Recolección de datos (trabajo de campo y fuentes secundarias).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p12",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 12,
+        "descripcion": "Análisis de datos (tabulación, graficación e interpretación de resultados).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p13",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 13,
+        "descripcion": "Presentación de resultados (informe, conclusiones y recomendaciones).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p1",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Diagnóstico general acerca del posicionamiento del producto (bien o servicio) de acuerdo con el Marketing Mix.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p2",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Identificación y descripción del producto/servicio: atributos, portafolio, ficha técnica, empaque/presentación, ciclo de vida, marca, logo, slogan.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p3",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Identificación y descripción del precio: políticas de fijación de precios, políticas de descuentos o plazos de pago, medios de pago.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p4",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Identificación y descripción de la plaza: tipos de canales y distribución.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p5",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Identificación y descripción de la promoción: publicidad, comunicación, promoción, relaciones corporativas, fuerzas de venta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p6",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Elaboración del Plan de Marketing (objetivos, estrategias de las 4Ps, acciones, presupuesto/cronograma, KPIs).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p7",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Especificación de la realización de Marketing Digital, Marketing Green y Marketing de Contenidos.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p1",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Recopilar información de expectativas y preferencias de servicio al cliente (muestra representativa, muestreo probabilístico, cuestionario con dimensiones de servicio y NPS).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p2",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Analizar los resultados de la encuesta e identificar fortalezas y debilidades percibidas.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p3",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Plan de acción de servicio al cliente (Objetivo, Meta, Estrategias, Acciones, Indicador, Beneficios, Presupuesto/Recursos, Tiempo, Responsable).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p4",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Propuesta de manual de protocolo de atención al cliente (introducción, fundamentos, canales, situaciones específicas, conocimiento del producto, anexos).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p5",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Programa de fidelización de clientes (objetivo, clientes objetivo, canales, tipo de programa, diseño de tarjeta/formulario/catálogo, presupuesto).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p6",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Formato en Excel para registro de principales clientes, datos, rotación, nivel de compras y promociones aplicables.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p7",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Establecer cinco (5) indicadores de gestión para medir la satisfacción del servicio al cliente.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p1",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 1,
+        "descripcion": "Identificar necesidades y requerimientos para la gestión de inventarios.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p2",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 2,
+        "descripcion": "Propuesta de modelo de gestión de inventarios.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p3",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 3,
+        "descripcion": "Agrupación de productos/servicios por familias, codificación y generación de códigos de barras.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p4",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 4,
+        "descripcion": "Establecer cinco (5) estrategias para minimizar costos y alcanzar la eficiencia del inventario.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p5",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 5,
+        "descripcion": "Diseñar esquema completo de la cadena de suministro.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p6",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 6,
+        "descripcion": "Procedimiento para búsqueda, selección y seguimiento de proveedores.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p7",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 7,
+        "descripcion": "Establecer cinco (5) indicadores de gestión para la administración de inventarios.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s1",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 1,
+        "descripcion": "Constitución de la empresa: Presente los siguientes documentos que creó en la Guía 1 - Fundamentos y Prácticas para la Gestión Administrativa y de cada uno explique brevemente que es y su importancia.",
+        "detallesExtra": {
+          "elementos": [
+            "Estatutos de la sociedad que simulo crear",
+            "Formulario para inscribirse en el RUES",
+            "Registro Único Tributario – RUT",
+            "Certificado de existencia y Representación Legal"
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s2",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 2,
+        "descripcion": "Caracterización Contable, Tributaria y Legal de la Empresa: Presente la empresa desde el ámbito Contable, Tributaria y Legal.",
+        "detallesExtra": {
+          "puntos": [
+            "Ámbito Contable: Clasificación en Grupo 2 de NIIF para Pymes (Decreto 2420 de 2015), marco normativo y devengo.",
+            "Ámbito Tributario: Persona jurídica perteneciente al Régimen Ordinario de Renta, responsable de IVA (bimestral), agente retenedor y declarante de ICA.",
+            "Ámbito Legal: Sociedad por Acciones Simplificada (S.A.S.) regida por la Ley 1258 de 2008 y Código de Comercio."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s3",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 3,
+        "descripcion": "Aspectos a tener en cuenta en la creación del proceso contable y tributario de la empresa",
+        "detallesExtra": {
+          "subsecciones": [
+            {
+              "subnumero": 1,
+              "titulo": "Marco legal y normativo",
+              "descripcion": "Presente y explique brevemente las principales normas contables y tributarias que la empresa debe tener en cuenta."
+            },
+            {
+              "subnumero": 2,
+              "titulo": "Contratación personal calificado",
+              "descripcion": "Presente la propuesta sobre la contratación de los apoyos en el área contable, presente tipo de contrato y explique brevemente."
+            }
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s4",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 4,
+        "descripcion": "Soluciones para la Gestión Contable y Tributaria en la empresa: Explique brevemente su propuesta de cada una de las siguientes soluciones con respecto a los siguientes temas.",
+        "detallesExtra": {
+          "puntos": [
+            "Documentos contables y no contables: manejo, archivo y conservación.",
+            "Mecanismos de facturación",
+            "Políticas contables",
+            "Cumplimiento con la definición y criterios de reconocimiento según el marco conceptual.",
+            "Responsabilidades tributarias (Impuestos que debe asumir y cumplir)",
+            "Seleccionar el medio para llevar control de la situación financiera de la empresa, como software de contabilidad, contratación de contador, etc.",
+            "Presente por ahora la propuesta de manejo del archivo en Excel que está trabajando Sistema de Información Contable en Excel.xlsx, donde le permite llevar contabilidad.",
+            "Para este caso que se va a trabajar un Sistema de Información Contable en Excel."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s5",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 5,
+        "descripcion": "Soluciones para la Gestión Financiera: Presente y explique brevemente la propuesta con su respectivo instructivo de uso de las herramientas de Matemáticas Financieras en la empresa trabajadas en el archivo en Excel: Sistema de Información Contable en Excel.xlsx.",
+        "detallesExtra": {
+          "herramientas": [
+            "Calculadora de amortización de créditos.",
+            "Conversor de tasas.",
+            "Calculo valor futuro y valor presente"
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s6",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 6,
+        "descripcion": "Soluciones para proceso de Liquidación de Nómina e Incentivos y Beneficios tributarios.",
+        "detallesExtra": {
+          "puntos": [
+            "Presente y explique brevemente la propuesta con su respectivo instructivo de uso de la herramienta de Liquidación de nómina trabajada por el GAES en el archivo Sistema de Información Contable en Excel.xlsx",
+            "Presente la propuesta de Incentivos y Beneficios tributarios que la empresa puede contemplar, como exoneración de aportes Art. 114-1 ET, beneficios por Contratación de Jóvenes, mujeres víctimas de violencia, personas con discapacidad, adultos mayores, entre otros."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s7",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 7,
+        "descripcion": "Soluciones para valuación de inventarios: Presente y explique brevemente la propuesta para la valuación de Inventarios",
+        "detallesExtra": {
+          "puntos": [
+            "Método de valuación adoptado: Promedio Ponderado para insumos y materias primas; PEPS (Primeros en Entrar, Primeros en Salir) para producto terminado perecedero.",
+            "Diseño e implementación de la tarjeta Kárdex bajo Sección 13 NIIF para Pymes.",
+            "Manejo contable de costos de adquisición, costos de transformación y registro de mermas operativas."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s8",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 8,
+        "descripcion": "Soluciones para medición y reconocimiento (registro contable) de los hechos económicos de la empresa",
+        "detallesExtra": {
+          "puntos": [
+            "Explique brevemente que es el ciclo contable y la importancia de la medición y reconocimiento (registro contable) de los hechos económicos de la empresa.",
+            "Explique brevemente como el archivo en Excel Sistema de Información Contable en Excel.xlsx que está trabajando, puede ser la herramienta para llevar contabilidad y control financiero de la empresa. Explique la funcionalidad y el paso a paso de como esta herramienta contribuye a manejar el ciclo contable de la empresa."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s9",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 9,
+        "descripcion": "Soluciones para la Generación y presentación de Estados Financieros",
+        "detallesExtra": {
+          "puntos": [
+            "Explique brevemente que son los Estados Financieros y la importancia para la empresa.",
+            "Explique brevemente como el archivo en Excel Sistema de Información Contable en Excel.xlsx luego de reconocer cada hecho económico de la empresa (registro de facturas), construye los siguientes Estados Financieros:"
+          ],
+          "estados_financieros": [
+            "Estado de la Situación Financiera",
+            "Estado de Resultados"
+          ],
+          "requerimientos_adicionales": [
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s10",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 10,
+        "descripcion": "Soluciones para Análisis Financiero: Explique brevemente que es y para que le sirve a la empresa hacer análisis financiero mediante el análisis horizontal y vertical y análisis mediante Razones Financieras. De igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para sus cálculos.",
+        "detallesExtra": {
+          "puntos": [
+            "Explique brevemente que es y para que le sirve a la empresa hacer análisis financiero mediante el análisis horizontal y vertical y análisis mediante Razones Financieras. De igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para sus cálculos.",
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s11",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 11,
+        "descripcion": "Soluciones para realizar el Presupuesto: Explique brevemente que es y para que le sirve a la empresa hacer presupuesto, de igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para hacerlo.",
+        "detallesExtra": {
+          "puntos": [
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s12",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 12,
+        "descripcion": "Soluciones para evaluar la rentabilidad del Negocio: Explique brevemente que es y para que le sirve a la empresa evaluar la rentabilidad del negocio mediante la TIR, de igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para hacerlo.",
+        "detallesExtra": {
+          "puntos": [
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      }
+    ],
+    "pesta": [
+      {
+        "id": "pes-new-1",
+        "category": "Político",
+        "factor": "Normatividad gubernamental que promueve el sector empresarial.",
+        "impactType": "Oportunidad",
+        "intensity": "Media",
+        "rationale": "Beneficios tributarios o programas de apoyo institucional.",
+        "evidenceSource": "Documento Conpes / Ley vigente"
+      },
+      {
+        "id": "pes-new-2",
+        "category": "Económico",
+        "factor": "Tasa de inflación e incremento en costo de materias primas.",
+        "impactType": "Amenaza",
+        "intensity": "Media",
+        "rationale": "Presión sobre la estructura de costos de producción.",
+        "evidenceSource": "DANE Boletín Económico"
+      }
+    ],
+    "mefi": [
+      {
+        "id": "mefi-new-1",
+        "type": "Fortaleza",
+        "factor": "Calidad superior y diferenciación del producto o servicio frente a la competencia.",
+        "weight": 0.3,
+        "rating": 4,
+        "weightedScore": 1.2,
+        "area": "Mercadeo",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefi-new-2",
+        "type": "Fortaleza",
+        "factor": "Compromiso y competencias técnicas del equipo humano fundador.",
+        "weight": 0.2,
+        "rating": 3,
+        "weightedScore": 0.6,
+        "area": "Talento Humano",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefi-new-3",
+        "type": "Debilidad",
+        "factor": "Capacidad instalada limitada y bajo nivel de automatización.",
+        "weight": 0.25,
+        "rating": 1,
+        "weightedScore": 0.25,
+        "area": "Operaciones",
+        "validationStatus": "Supuesto por Verificar"
+      },
+      {
+        "id": "mefi-new-4",
+        "type": "Debilidad",
+        "factor": "Limitada presencia en canales de comercialización y mercadeo digital.",
+        "weight": 0.25,
+        "rating": 2,
+        "weightedScore": 0.5,
+        "area": "Mercadeo",
+        "validationStatus": "Validado"
+      }
+    ],
+    "mefe": [
+      {
+        "id": "mefe-new-1",
+        "type": "Oportunidad",
+        "factor": "Crecimiento de la demanda en el segmento de mercado objetivo.",
+        "weight": 0.3,
+        "rating": 4,
+        "weightedScore": 1.2,
+        "pestaCategory": "Social",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefe-new-2",
+        "type": "Oportunidad",
+        "factor": "Acceso a convocatorias de capital semilla y fomento emprendedor.",
+        "weight": 0.2,
+        "rating": 3,
+        "weightedScore": 0.6,
+        "pestaCategory": "Económico",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefe-new-3",
+        "type": "Amenaza",
+        "factor": "Entrada de competidores consolidados con economías de escala.",
+        "weight": 0.25,
+        "rating": 2,
+        "weightedScore": 0.5,
+        "pestaCategory": "Económico",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefe-new-4",
+        "type": "Amenaza",
+        "factor": "Cambios regulatorios o exigencias de permisos sectoriales.",
+        "weight": 0.25,
+        "rating": 2,
+        "weightedScore": 0.5,
+        "pestaCategory": "Ambiental / Legal",
+        "validationStatus": "Supuesto por Verificar"
+      }
+    ],
+    "dofa": [
+      {
+        "id": "dofa-new-fo-1",
+        "code": "FO-1",
+        "type": "FO",
+        "title": "Penetración de mercado con producto diferenciado",
+        "description": "Aprovechar la calidad del producto y el crecimiento del mercado para posicionar la marca.",
+        "crossedFactors": [
+          "F1",
+          "O1"
+        ],
+        "priority": "Alta"
+      },
+      {
+        "id": "dofa-new-do-1",
+        "code": "DO-1",
+        "type": "DO",
+        "title": "Modernización con fuentes de financiamiento",
+        "description": "Postular a convocatorias para financiar maquinaria y ampliar capacidad de planta.",
+        "crossedFactors": [
+          "D3",
+          "O2"
+        ],
+        "priority": "Alta"
+      }
+    ],
+    "peyea": {
+      "financialStrength": [
+        {
+          "id": "ff-1",
+          "name": "Rendimiento sobre inversión",
+          "score": 3
+        },
+        {
+          "id": "ff-2",
+          "name": "Liquidez corriente",
+          "score": 4
+        }
+      ],
+      "competitiveAdvantage": [
+        {
+          "id": "vc-1",
+          "name": "Calidad del producto",
+          "score": -2
+        },
+        {
+          "id": "vc-2",
+          "name": "Participación de mercado",
+          "score": -4
+        }
+      ],
+      "environmentalStability": [
+        {
+          "id": "ea-1",
+          "name": "Estabilidad de precios",
+          "score": -3
+        },
+        {
+          "id": "ea-2",
+          "name": "Barreras de entrada",
+          "score": -3
+        }
+      ],
+      "industryStrength": [
+        {
+          "id": "fi-1",
+          "name": "Potencial de crecimiento",
+          "score": 4
+        },
+        {
+          "id": "fi-2",
+          "name": "Estabilidad financiera",
+          "score": 3
+        }
+      ],
+      "avgFF": 3.5,
+      "avgVC": -3,
+      "avgEA": -3,
+      "avgFI": 3.5,
+      "coordinateX": 0.5,
+      "coordinateY": 0.5,
+      "quadrant": "Agresivo",
+      "interpretation": "Postura Agresiva: Organización financieramente fuerte con ventajas competitivas relevantes en una industria atractiva. Estrategias: penetración de mercado, desarrollo de productos, integración vertical y expansión."
+    },
+    "mpc": {
+      "competitor1Name": "Competidor Alfa",
+      "competitor2Name": "Competidor Beta",
+      "factors": [
+        {
+          "id": "mpc-1",
+          "factor": "Calidad del producto",
+          "weight": 0.3,
+          "companyRating": 4,
+          "competitor1Rating": 3,
+          "competitor2Rating": 3
+        },
+        {
+          "id": "mpc-2",
+          "factor": "Precios competitivos",
+          "weight": 0.25,
+          "companyRating": 3,
+          "competitor1Rating": 4,
+          "competitor2Rating": 3
+        },
+        {
+          "id": "mpc-3",
+          "factor": "Canal de distribución",
+          "weight": 0.25,
+          "companyRating": 2,
+          "competitor1Rating": 4,
+          "competitor2Rating": 4
+        },
+        {
+          "id": "mpc-4",
+          "factor": "Servicio al cliente",
+          "weight": 0.2,
+          "companyRating": 4,
+          "competitor1Rating": 3,
+          "competitor2Rating": 3
+        }
+      ]
+    },
+    "bcg": [
+      {
+        "id": "bcg-1",
+        "productName": "Producto Principal",
+        "relativeMarketShare": 1.1,
+        "marketGrowthRatePercent": 15,
+        "companySalesPercent": 70,
+        "category": "Estrella",
+        "strategicAction": "Invertir para consolidar liderazgo de mercado."
+      },
+      {
+        "id": "bcg-2",
+        "productName": "Línea Complementaria",
+        "relativeMarketShare": 0.6,
+        "marketGrowthRatePercent": 12,
+        "companySalesPercent": 30,
+        "category": "Interrogante",
+        "strategicAction": "Evaluar tracción antes de comprometer mayores inversiones."
+      }
+    ],
+    "indicators": [
+      {
+        "id": "ind-fin-01",
+        "code": "IND-FIN-01",
+        "name": "Margen de Utilidad Neta",
+        "perspective": "Financiera",
+        "associatedObjectiveId": "bsc-fin-01",
+        "definition": "Mide la rentabilidad final generada por el proyecto.",
+        "formula": "(Utilidad Neta / Ventas Totales) * 100",
+        "unit": "%",
+        "periodicity": "Trimestral",
+        "baseline": 5,
+        "target": 12,
+        "greenRange": ">= 10.0%",
+        "yellowRange": "7.0% - 9.9%",
+        "redRange": "< 7.0%",
+        "dataSource": "Estado de Resultados Proyectado",
+        "responsibleRole": "Coordinador Financiero GAES"
+      },
+      {
+        "id": "ind-cli-01",
+        "code": "IND-CLI-01",
+        "name": "Crecimiento de Clientes Frecuentes",
+        "perspective": "Clientes",
+        "associatedObjectiveId": "bsc-cli-01",
+        "definition": "Número de clientes con recompra mensual.",
+        "formula": "Total clientes activos con recompra en el mes",
+        "unit": "Unidades",
+        "periodicity": "Mensual",
+        "baseline": 5,
+        "target": 30,
+        "greenRange": ">= 25 clientes",
+        "yellowRange": "15 - 24 clientes",
+        "redRange": "< 15 clientes",
+        "dataSource": "Registro de ventas y pedidos",
+        "responsibleRole": "Coordinador de Mercadeo GAES"
+      },
+      {
+        "id": "ind-pro-01",
+        "code": "IND-PRO-01",
+        "name": "Eficiencia Operacional de Producción",
+        "perspective": "Procesos Internos",
+        "associatedObjectiveId": "bsc-pro-01",
+        "definition": "Cumplimiento del programa mensual de producción.",
+        "formula": "(Unidades producidas conformes / Unidades programadas) * 100",
+        "unit": "%",
+        "periodicity": "Mensual",
+        "baseline": 70,
+        "target": 90,
+        "greenRange": ">= 88%",
+        "yellowRange": "75% - 87%",
+        "redRange": "< 75%",
+        "dataSource": "Planilla de producción",
+        "responsibleRole": "Coordinador de Operaciones GAES"
+      },
+      {
+        "id": "ind-apr-01",
+        "code": "IND-APR-01",
+        "name": "Cumplimiento del Plan de Capacitación Técnica",
+        "perspective": "Aprendizaje y Crecimiento",
+        "associatedObjectiveId": "bsc-apr-01",
+        "definition": "Porcentaje de módulos de formación técnica cursados por el GAES.",
+        "formula": "(Horas cursadas / Horas programadas) * 100",
+        "unit": "%",
+        "periodicity": "Trimestral",
+        "baseline": 50,
+        "target": 100,
+        "greenRange": ">= 90%",
+        "yellowRange": "70% - 89%",
+        "redRange": "< 70%",
+        "dataSource": "Control de asistencia formativa",
+        "responsibleRole": "Líder GAES"
+      }
+    ],
+    "bscObjectives": [
+      {
+        "id": "bsc-fin-01",
+        "code": "OBJ-FIN-01",
+        "perspective": "Financiera",
+        "title": "Alcanzar margen neto del 12% en el primer año",
+        "description": "Consolidar la rentabilidad del modelo de negocio.",
+        "matrixOrigin": "DOFA FO-1 | MEFI Fortaleza F1 | PEYEA Cuadrante Agresivo",
+        "primaryIndicatorId": "ind-fin-01",
+        "targetAnnual": "12% margen neto",
+        "strategicInitiative": "Plan de ventas y control de costos de materia prima.",
+        "estimatedBudgetCOP": 5000000,
+        "responsibleRole": "Coordinador Financiero"
+      },
+      {
+        "id": "bsc-cli-01",
+        "code": "OBJ-CLI-01",
+        "perspective": "Clientes",
+        "title": "Captar 30 clientes corporativos recurrentes",
+        "description": "Desarrollar cartera de clientes con pedidos programados.",
+        "matrixOrigin": "DOFA FO-1 | MEFE Oportunidad O1",
+        "primaryIndicatorId": "ind-cli-01",
+        "targetAnnual": "30 clientes recurrentes",
+        "strategicInitiative": "Campaña de prospección comercial directa.",
+        "estimatedBudgetCOP": 3000000,
+        "responsibleRole": "Coordinador de Mercadeo"
+      },
+      {
+        "id": "bsc-pro-01",
+        "code": "OBJ-PRO-01",
+        "perspective": "Procesos Internos",
+        "title": "Estandarizar el proceso productivo con 90% de eficiencia",
+        "description": "Reducir variaciones en tiempos y mermas.",
+        "matrixOrigin": "DOFA DO-1 | MEFI Debilidad D3",
+        "primaryIndicatorId": "ind-pro-01",
+        "targetAnnual": "90% de eficiencia de producción",
+        "strategicInitiative": "Manual de procedimientos y hojas de ruta de producción.",
+        "estimatedBudgetCOP": 2000000,
+        "responsibleRole": "Coordinador de Operaciones"
+      },
+      {
+        "id": "bsc-apr-01",
+        "code": "OBJ-APR-01",
+        "perspective": "Aprendizaje y Crecimiento",
+        "title": "Completar competencias técnicas en gestión de calidad",
+        "description": "Capacitar al equipo en normas técnicas sectoriales.",
+        "matrixOrigin": "MEFI Fortaleza F2 | Resultados de Aprendizaje Guía 16",
+        "primaryIndicatorId": "ind-apr-01",
+        "targetAnnual": "100% del plan de capacitación",
+        "strategicInitiative": "Talleres formativos complementarios SENA.",
+        "estimatedBudgetCOP": 1000000,
+        "responsibleRole": "Líder GAES"
+      }
+    ],
+    "bscLinks": [
+      {
+        "id": "link-1",
+        "fromObjectiveId": "bsc-apr-01",
+        "toObjectiveId": "bsc-pro-01",
+        "explanation": "La capacitación del equipo asegura la estandarización y eficiencia del proceso productivo."
+      },
+      {
+        "id": "link-2",
+        "fromObjectiveId": "bsc-pro-01",
+        "toObjectiveId": "bsc-cli-01",
+        "explanation": "Procesos estandarizados garantizan productos confiables que fidelizan clientes."
+      },
+      {
+        "id": "link-3",
+        "fromObjectiveId": "bsc-cli-01",
+        "toObjectiveId": "bsc-fin-01",
+        "explanation": "Mayor cartera de clientes recurrentes genera ventas sostenibles y rentabilidad."
+      }
+    ],
+    "isMatricesValidated": false,
+    "instructorEvaluation": {
+      "evaluatedAt": "",
+      "instructorName": "",
+      "instructorDocument": "",
+      "finalJudgment": "PENDIENTE DE EVALUACIÓN",
+      "productEvidenceScore": 0,
+      "performanceEvidenceScore": 0,
+      "isLocked": false,
+      "isDefinitiveSaved": false,
+      "criteria": [
+        {
+          "id": "crit-comp-21060100303",
+          "rapCode": "21060100303",
+          "title": "Plan de mejoramiento organizacional y ajuste de políticas",
+          "description": "Evaluar y ajustar la ejecución del plan de mejoramiento organizacional, de acuerdo con las políticas de la organización.",
+          "asociacionTrabajoRealizado": "Articulado con el Cuadro de Mando Integral (Balanced Scorecard), iniciativas estratégicas presupuestadas ($ COP), metas anuales de los 8 objetivos, matriz de planes de mejora (Luc Brunet) y el motor de auditoría algorítmica para calibrar desviaciones de desempeño.",
+          "nucleoAsociado": "Fase 4 (BSC) & Auditoría de Coherencia",
+          "toolsIncluded": "Balanced Scorecard (Kaplan & Norton), Mapa Causa-Efecto, Iniciativas Estratégicas y Presupuesto, Plan de Mejora Organizacional",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21010100503",
+          "rapCode": "21010100503",
+          "title": "Gestión del talento humano y evaluación del rendimiento",
+          "description": "Evaluar la gestión del talento según niveles de rendimiento, normas y procedimientos establecidos por la organización.",
+          "asociacionTrabajoRealizado": "Vinculado con la Perspectiva de Aprendizaje y Crecimiento del BSC, las Guías 4 a 6 de Talento Humano (manuales de funciones, perfiles de cargo, evaluación del desempeño por competencias 360°, KPIs de rotación y horas de capacitación técnica IND-APR-01).",
+          "nucleoAsociado": "Talento Humano & Perspectiva de Aprendizaje",
+          "toolsIncluded": "Perspectiva Aprendizaje & Crecimiento BSC, Ficha Técnica IND-APR-01, Macroprocesos de Talento Humano (Guías 4-6)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060100904",
+          "rapCode": "21060100904",
+          "title": "Diagnóstico organizacional y sistema de gestión de calidad",
+          "description": "Evaluar los resultados obtenidos del diagnóstico y de la implementación del plan de mejoramiento de acuerdo con las políticas de la organización, normas vigentes y el sistema de gestión de la calidad.",
+          "asociacionTrabajoRealizado": "Conectado con las Matrices Diagnósticas MEFI (Σ=1.00) y MEFE (Σ=1.00), factores críticos del sistema de gestión de calidad (Buenas Prácticas de Manufactura BPM, normas técnicas sectoriales, aseguramiento de inocuidad en planta) y plan de acciones correctivas.",
+          "nucleoAsociado": "Diagnóstico MEFI/MEFE & Gestión de Calidad",
+          "toolsIncluded": "Matriz MEFI (Factores Internos), Matriz MEFE (Factores Externos), Protocolos de Calidad e Inocuidad (Guías 1 y 11)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060100905",
+          "rapCode": "21060100905",
+          "title": "Clima organizacional propicio y desarrollo del talento humano",
+          "description": "Garantizar que el clima organizacional sea propicio para el cumplimiento de las actividades laborales, las políticas organizacionales y el desarrollo del talento humano, mediante las propuestas de mejoramiento del clima organizacional, de acuerdo con los resultados obtenidos.",
+          "asociacionTrabajoRealizado": "Respaldado en el estudio y diagnóstico de Clima Organizacional bajo el modelo Luc Brunet (Guía 5: 8 dimensiones evaluadas), diseño del plan de bienestar laboral, programas de incentivos y retención, comités de convivencia y políticas corporativas formalizadas en la plataforma estratégica.",
+          "nucleoAsociado": "Clima Organizacional & Bienestar Laboral",
+          "toolsIncluded": "Diagnóstico Clima Luc Brunet (8 Dimensiones), Plan de Bienestar y Políticas Organizacionales (Guía 5)",
+          "weight": 14,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21020103304",
+          "rapCode": "21020103304",
+          "title": "Programa de seguridad y salud en el trabajo (SG-SST)",
+          "description": "Evaluar el desarrollo del programa de salud ocupacional de acuerdo con las normas técnicas, de calidad y legales vigentes.",
+          "asociacionTrabajoRealizado": "Articulado con el Sistema de Gestión de la Seguridad y Salud en el Trabajo (SG-SST - Guía 6 bajo Decreto 1072/2015 y Res. 0312/2019), matriz de identificación de peligros y valoración de riesgos (GTC 45), plan de emergencias y protocolos de bioseguridad ocupacional.",
+          "nucleoAsociado": "Seguridad y Salud en el Trabajo (SG-SST)",
+          "toolsIncluded": "Matriz de Riesgos SG-SST (GTC 45), Plan de Emergencias, Protocolos de Bioseguridad y Salud Ocupacional (Guía 6)",
+          "weight": 11,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060101402",
+          "rapCode": "21060101402",
+          "title": "Evaluación socioeconómica y alternativas estratégicas de decisión",
+          "description": "Evaluar social y económicamente las alternativas de solución propuestas a la decisión, teniendo en cuenta la ponderación, criterios técnicos, el resultado que se persiga, las metodologías y tecnología disponible.",
+          "asociacionTrabajoRealizado": "Fundamentado en la formulación de la Matriz DOFA Cruzada (FO, DO, FA, DA), la Matriz PEYEA (vector direccional cartesiano), la Matriz BCG de cartera de productos y la evaluación financiera de rentabilidad (TIR = 28.4%, VPN = $42.8M COP, análisis vertical/horizontal y 12 razones financieras del informe de gestión contable Guías 12 a 15).",
+          "nucleoAsociado": "Estrategias DOFA, PEYEA & Evaluación Financiera",
+          "toolsIncluded": "Matriz DOFA Cruzada, Matriz PEYEA Vectorial, Matriz BCG, Evaluación Financiera TIR / VPN / Razones (Guías 12-15)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060101403",
+          "rapCode": "21060101403",
+          "title": "Procesos administrativos, logística empresarial y simulación matemática",
+          "description": "Verificar y caracterizar los procesos y procedimientos administrativos y de logística empresarial, en la toma de decisiones para el logro de los resultados, utilizando metodologías matemáticas y de simulación, teniendo en cuenta la tecnología disponible y la legislación vigente.",
+          "asociacionTrabajoRealizado": "Sustentado en la Matriz de Perfil Competitivo (MPC), el Análisis Macroentorno PESTA, la caracterización de la cadena de suministro y logística de distribución física (Guía 11), control de inventarios PEPS/Kárdex en Excel y fichas técnicas de indicadores logísticos y operacionales (Nivel de servicio OTIF 95% e índice de mermas 1.5%).",
+          "nucleoAsociado": "Logística, Simulación Matemática MPC & Operaciones",
+          "toolsIncluded": "Matriz MPC Ponderada, Análisis PESTA, Cadena de Suministro (Guía 11), Indicadores Operacionales OTIF y Mermas (IND-PRO-01/02)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        }
+      ],
+      "productObservation": "Pendiente de revisión técnica y emisión de juicio por el instructor.",
+      "performanceObservation": "Pendiente de sustentación y evaluación de desempeño por el instructor.",
+      "auditHistory": []
+    },
+    "version": 4,
+    "isLocked": false,
+    "isRosterConfirmed": true,
+    "isDemoProject": false,
+    "collaborationHistory": [
+      {
+        "id": "audit-256e25e1e63b",
+        "timestamp": "2026-10-22T19:35:03.527Z",
+        "userId": "app-coord-72",
+        "userName": "Mateo Alejandro Ríos",
+        "userEmail": "mateo.rios72@soy.sena.edu.co",
+        "gaesNumber": 72,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Caracterización GAES (Fase 1)",
+        "operationType": "MODIFICAR",
+        "previousVersion": "3",
+        "newVersion": "4",
+        "description": "Modificación de Caracterización GAES (Fase 1) por Mateo Alejandro Ríos"
+      },
+      {
+        "id": "audit-a8c52ac64b75",
+        "timestamp": "2026-10-22T19:35:03.508Z",
+        "userId": "app-coord-72",
+        "userName": "Mateo Alejandro Ríos",
+        "userEmail": "mateo.rios72@soy.sena.edu.co",
+        "gaesNumber": 72,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Caracterización GAES (Fase 1)",
+        "operationType": "MODIFICAR",
+        "previousVersion": "2",
+        "newVersion": "3",
+        "description": "Modificación de Caracterización GAES (Fase 1) por Mateo Alejandro Ríos"
+      },
+      {
+        "id": "audit-0cfc1e4c1bfd",
+        "timestamp": "2026-10-22T19:35:03.493Z",
+        "userId": "app-leader-72",
+        "userName": "Camila Andrea Ospina",
+        "userEmail": "camila.ospina72@soy.sena.edu.co",
+        "gaesNumber": 72,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Confirmación y Bloqueo de GAES",
+        "operationType": "MODIFICAR",
+        "previousVersion": "1",
+        "newVersion": "2",
+        "description": "Conformación oficial del GAES 72 (BioEmpaques del Pacífico 72 S.A.S.) confirmada y bloqueada por el líder Camila Andrea Ospina. Nómina de 2 integrantes asegurada."
+      },
+      {
+        "id": "audit-6728855f75d8",
+        "timestamp": "2026-10-22T19:35:03.463Z",
+        "userId": "app-leader-72",
+        "userName": "Camila Andrea Ospina",
+        "userEmail": "camila.ospina72@soy.sena.edu.co",
+        "gaesNumber": 72,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Registro Oficial de GAES y Empresa",
+        "operationType": "CREAR",
+        "newVersion": "1",
+        "description": "Registro inicial del GAES 72 (BioEmpaques del Pacífico 72 S.A.S.) por el líder Camila Andrea Ospina."
+      }
+    ],
+    "rosterConfirmedAt": "2026-10-22T19:35:03.493Z",
+    "rosterConfirmedBy": "Camila Andrea Ospina"
+  },
+  {
+    "id": "gaes-7-2687410-1792697624459",
+    "gaesNumber": 7,
+    "fichaNumber": "2687410",
+    "programName": "Tecnólogo en Gestión Empresarial",
+    "centerName": "Centro de Formación SENA",
+    "regional": "Regional SENA",
+    "lastUpdated": "2026-10-22T19:33:44.513Z",
+    "currentStep": 1,
+    "apprentices": [
+      {
+        "id": "app-leader-7",
+        "name": "Camila Andrea Ospina",
+        "document": "1098456123",
+        "email": "camila.ospina@soy.sena.edu.co",
+        "phone": "312 456 7890",
+        "role": "Líder GAES"
+      },
+      {
+        "id": "app-coord-7",
+        "name": "Mateo Alejandro Ríos",
+        "document": "1098456124",
+        "email": "mateo.rios@soy.sena.edu.co",
+        "phone": "312 456 7891",
+        "role": "Coordinador Financiero"
+      }
+    ],
+    "company": {
+      "nit": "901.888.777-2",
+      "ciiuCode": "2220 - Fabricación de artículos de plástico biodegradables",
+      "valueProposition": "Empaques 100% compostables a base de almidón de yuca.",
+      "name": "BioEmpaques del Pacífico S.A.S."
+    },
+    "priorGuides": {
+      "diagnosticSummary": "",
+      "internalValueChain": "",
+      "missionVisionOriginal": {
+        "mission": "",
+        "vision": "",
+        "values": []
+      },
+      "marketStudyFindings": "",
+      "financialHealth": {
+        "annualSales": 0,
+        "grossMarginPercent": 0,
+        "netMarginPercent": 0,
+        "liquidityRatio": 1,
+        "debtRatioPercent": 0
+      },
+      "operationalBottlenecks": "",
+      "uploadedDocumentsSummary": []
+    },
+    "learningGuidesDeliverables": [
+      {
+        "id": "g1-p1",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 1,
+        "descripcion": "Identifique qué tipo de empresa desean crear o que sociedad, y analice la actividad que desarrollará, apoyándose en el enlace para clasificar la actividad económica.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p2",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 2,
+        "descripcion": "Caracterice su empresa: ordene todos los aspectos básicos presentes en su inicio, clase de sociedad, actividad, ubicación, número de socios, número de colaboradores, capital, entre otros aspectos relevantes.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p3",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 3,
+        "descripcion": "Reflexione con su GAES sobre las teorías vistas y tome tres (3) que considere un modelo adecuado para seguir el desarrollo de las actividades empresariales; analice las tendencias y seleccione dos (2) que puedan contribuir a la marcha organizacional adecuada de la empresa creada.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p4",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 4,
+        "descripcion": "Organice las diferentes fases del proceso administrativo y los elementos que lo componen, identificando el desarrollo en su empresa y completando la tabla correspondiente.",
+        "detallesExtra": {
+          "tabla": [
+            {
+              "fase": "Planeación",
+              "elementos_o_acciones": [
+                "Objetivos",
+                "Estrategias",
+                "Programas",
+                "Presupuestos",
+                "Procedimientos"
+              ]
+            },
+            {
+              "fase": "Organización",
+              "elementos_o_acciones": [
+                "División Del Trabajo",
+                "Jerarquización",
+                "Descripción De Funciones",
+                "Coordinación"
+              ]
+            },
+            {
+              "fase": "Dirección",
+              "elementos_o_acciones": [
+                "Toma De Decisiones",
+                "Integración",
+                "Motivación",
+                "Comunicación",
+                "Supervisión"
+              ]
+            },
+            {
+              "fase": "Control",
+              "elementos_o_acciones": [
+                "Establecimiento De Estándares",
+                "Medición",
+                "Corrección",
+                "Retroalimentación"
+              ]
+            }
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g1-p5",
+        "guiaNumero": "1",
+        "guiaNombre": "Fundamentos y Prácticas para la Gestión Empresarial",
+        "grupo": "Planeación Estratégica",
+        "numeral": 5,
+        "descripcion": "Presente un gráfico que muestre la relación de los componentes de un sistema abierto de la empresa objeto de estudio y analice cada uno de sus elementos (Insumos/Recursos, Procesos de Transformación, Productos/Resultados, Retroalimentación del Ambiente) y cómo se relacionan entre sí.",
+        "detallesExtra": {
+          "sistemaAbierto": {
+            "insumos_recursos": [
+              "Humanos",
+              "Materiales",
+              "Equipo",
+              "Financieros",
+              "Información"
+            ],
+            "procesos_de_transformacion": {
+              "capacidades_administrativas_y_tecnologicas": [
+                "Planeación",
+                "Organización",
+                "Dirección",
+                "Control",
+                "Tecnología"
+              ]
+            },
+            "productos_resultados": [
+              "Bienes y servicios",
+              "Pérdidas y utilidades",
+              "Desarrollo y satisfacción de los empleados"
+            ],
+            "retroalimentacion": "Retroalimentación del ambiente"
+          }
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p1",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 1,
+        "descripcion": "Analice el entorno empresarial (Macro y microentornos) incluidas las variables externas (Económico, político legal, socio cultural, demografía, tecnológica, ambiental-ecológica) e internas (Entidades reguladoras, proveedores, clientes, competencias), describiendo los sucesos externos e internos que tienen injerencia positiva y negativa en la empresa creada por el GAES.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p2",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 2,
+        "descripcion": "Investigue información del sector y subsector al que pertenece con datos actualizados (crecimiento del sector, aporte al PIB, empleos generados, etc., con fuentes oficiales no anteriores al año 2022 y citación APA).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p3",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 3,
+        "descripcion": "Realice la propuesta de la plataforma estratégica para su proyecto formativo.",
+        "detallesExtra": {
+          "componentesPlataforma": [
+            "Misión - Propuesta que cumpla con los atributos y características.",
+            "Visión - Propuesta que cumpla con los atributos y características.",
+            "Objetivos - Propuesta del objetivo general y los específicos que respondan a sus metas futuras.",
+            "Políticas - Establezca las políticas generales para la empresa objeto de estudio.",
+            "Valores - Propuesta de al menos cinco que cumplan el concepto de valor empresarial.",
+            "Diseñe un Logo inicial - Propuesta que cumpla con los atributos y características.",
+            "Identifique con un Slogan a su empresa - Propuesta que cumpla con los atributos y características."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p4",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 4,
+        "descripcion": "Presente la representación gráfica (organigrama) de la estructura organizacional que como GAES propone, teniendo en cuenta el principio de departamentalización de las cinco principales áreas funcionales (Organigrama Funcional), identificando las funciones propias de cada área en orden jerárquico y de complejidad.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p5",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 5,
+        "descripcion": "Formule el objetivo empresarial por cada área de la empresa, teniendo en cuenta la técnica SMART.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g2-p6",
+        "guiaNumero": "2",
+        "guiaNombre": "Planeación Estratégica",
+        "grupo": "Planeación Estratégica",
+        "numeral": 6,
+        "descripcion": "Presente el esquema de cadena de valor, relacionando las actividades primarias y secundarias propias de la actividad económica, resaltando aquellas que generan valor y aquellas que requieren fortalecimiento.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p1",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 1,
+        "descripcion": "Diseñe una encuesta como instrumento de recolección de datos (mínimo 15 preguntas) sobre elementos clave en Talento Humano y macroprocesos, aplicándola a al menos 20 personas que laboran o han laborado en empresa privada.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p2",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 2,
+        "descripcion": "Proponga cuál sería el modelo de gestión aplicado y adoptado en su organización.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p3",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 3,
+        "descripcion": "Diseñe un esquema que resuma los cinco macroprocesos para su empresa, y por cada uno realice el diagrama de flujo adecuado con su respectiva explicación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p4",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 4,
+        "descripcion": "Elabore el Plan de Acción indicando la proyección de actividades que realizará durante un (1) año.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p5",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 5,
+        "descripcion": "Diseñe los perfiles de cargo para cada uno de los colaboradores acorde con el organigrama y posteriormente diseñe el manual de funciones.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p6",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 6,
+        "descripcion": "Seleccione un modelo para la evaluación del personal y diséñelo explicando por qué lo adoptaría.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p7",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 7,
+        "descripcion": "Elabore los formatos para seleccionar y contratar el personal (reclutamiento, selección, contrato, inducción).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p8",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 8,
+        "descripcion": "Construya la estructura salarial de la empresa.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p9",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 9,
+        "descripcion": "Proponga el plan de incentivos y beneficios que la empresa ejecutará para sus colaboradores.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p10",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 10,
+        "descripcion": "Elabore el programa de capacitación para el primer año de funcionamiento.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g4-p11",
+        "guiaNumero": "4",
+        "guiaNombre": "Macroprocesos para la Gestión del Talento Humano",
+        "grupo": "Talento Humano",
+        "numeral": 11,
+        "descripcion": "Establezca cinco (5) indicadores de gestión que permitan medir la eficiencia en la administración del talento humano.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p1",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 1,
+        "descripcion": "Diseñe un instrumento de recolección que le permita identificar las necesidades y oportunidades para la puesta en marcha de un programa que fortalezca la gestión del clima organizacional.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p2",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 2,
+        "descripcion": "Elabore el diagnóstico preliminar identificando las dimensiones del clima organizacional propuestas por Luc Brunet (1987): pertenencia, trabajo en equipo, motivación y desarrollo, comunicación y retroalimentación, reconocimiento e incentivos, bienestar, seguridad y salud, relaciones humanas, dirección y liderazgo, participación y efectividad.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p3",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 3,
+        "descripcion": "Presente soluciones que fortalezcan el proceso mediante el desarrollo del plan de mejoramiento.",
+        "detallesExtra": {
+          "estructuraPlanMejoramiento": [
+            "Objetivo general",
+            "Debilidad",
+            "Acciones a desarrollar",
+            "Alcance",
+            "Objetivo de la acción a desarrollar",
+            "Meta",
+            "Beneficios",
+            "Recursos (Humanos, Materiales, Financiero)",
+            "Tiempo",
+            "Responsable"
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p4",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 4,
+        "descripcion": "Proponga el Protocolo de manejo de conflictos.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p5",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 5,
+        "descripcion": "Realice un plan de incentivos para la empresa, teniendo en cuenta los cargos y la naturaleza de la organización.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p6",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 6,
+        "descripcion": "Estructure el Manual de Convivencia de la empresa en desarrollo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g5-p7",
+        "guiaNumero": "5",
+        "guiaNombre": "Cultura y Clima Organizacional",
+        "grupo": "Talento Humano",
+        "numeral": 7,
+        "descripcion": "Establezca cinco (5) indicadores de gestión que permitan medir el clima organizacional dentro de la empresa.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p1",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 1,
+        "descripcion": "Diseñe un instrumento de recolección para identificar las necesidades de la empresa para aplicar criterios básicos de SG SST, considerando colaboradores y código CIIU.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p2",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 2,
+        "descripcion": "Genere un diagnóstico preliminar con los resultados obtenidos para iniciar la implementación del SG SST.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p3",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 3,
+        "descripcion": "Explique y argumente el estándar mínimo en el cual se clasifica la empresa propuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p4",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 4,
+        "descripcion": "Realice un listado de riesgos y peligros presentes en la organización identificando áreas y actividades.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p5",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 5,
+        "descripcion": "Proponga la política del SG SST para su empresa.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p6",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 6,
+        "descripcion": "Plantee al menos 5 objetivos para el SG SST.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p7",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 7,
+        "descripcion": "Sugiera un plan de trabajo para la implementación del SG SST (pausas activas, EPP, ARL, extintores/botiquines, seguimiento).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p8",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 8,
+        "descripcion": "Aplique la Matriz de peligros y factores de riesgo (GTC 45) y realice un plan de trabajo/explicación para vigía/COPASST, Brigada de emergencia, Comité de Convivencia Laboral y Comité de Higiene y Seguridad.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g6-p9",
+        "guiaNumero": "6",
+        "guiaNombre": "Seguridad y Salud en el Trabajo (SG SST)",
+        "grupo": "Talento Humano",
+        "numeral": 9,
+        "descripcion": "Establezca al menos cinco (5) indicadores que permitan medir la gestión y el desempeño del SG-SST.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p1",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Analice la situación actual del mercado, comportamiento, representatividad en el PIB y estadísticas del sector productivo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p2",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Analice la oferta (competencia directa y negocios con productos similares, describiendo sus productos y servicios).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p3",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Analice la demanda, tendencias de mercado futuras y ventas pasadas.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p4",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Analice las curvas de oferta y demanda, halle el punto de equilibrio y argumente los resultados.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p5",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Identifique el tipo de elasticidad que tiene la unidad productiva.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p6",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Analice los tipos de mercado (geográfico, tipo de cliente, competencia, tipo de producto, tipo de recurso, no clientes) y su aplicación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p7",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Caracterice y cuantifique el mercado potencial y el objetivo actual de la unidad productiva.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g7-p8",
+        "guiaNumero": "7",
+        "guiaNombre": "Mercados",
+        "grupo": "Mercadeo",
+        "numeral": 8,
+        "descripcion": "Defina las variables de segmentación, establezca el mercado objetivo y describa el perfil del cliente.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p1",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Tipo de producto o servicio seleccionado para el estudio de mercado (registros fotográficos si existen).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p2",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Razones por las cuales seleccionaron ese producto o servicio.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p3",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Realización de la investigación de mercados mediante encuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p4",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Identificación del problema (pregunta específica a responder).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p5",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Diseño de la investigación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p6",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Tipo de investigación.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p7",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Población objetivo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p8",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 8,
+        "descripcion": "Metodología de recolección de datos - Encuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p9",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 9,
+        "descripcion": "Diseño del cuestionario de la encuesta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p10",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 10,
+        "descripcion": "Muestreo respecto a la segmentación del mercado objetivo.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p11",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 11,
+        "descripcion": "Recolección de datos (trabajo de campo y fuentes secundarias).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p12",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 12,
+        "descripcion": "Análisis de datos (tabulación, graficación e interpretación de resultados).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g8-p13",
+        "guiaNumero": "8",
+        "guiaNombre": "Investigación de mercados",
+        "grupo": "Mercadeo",
+        "numeral": 13,
+        "descripcion": "Presentación de resultados (informe, conclusiones y recomendaciones).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p1",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Diagnóstico general acerca del posicionamiento del producto (bien o servicio) de acuerdo con el Marketing Mix.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p2",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Identificación y descripción del producto/servicio: atributos, portafolio, ficha técnica, empaque/presentación, ciclo de vida, marca, logo, slogan.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p3",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Identificación y descripción del precio: políticas de fijación de precios, políticas de descuentos o plazos de pago, medios de pago.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p4",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Identificación y descripción de la plaza: tipos de canales y distribución.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p5",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Identificación y descripción de la promoción: publicidad, comunicación, promoción, relaciones corporativas, fuerzas de venta.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p6",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Elaboración del Plan de Marketing (objetivos, estrategias de las 4Ps, acciones, presupuesto/cronograma, KPIs).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g9-p7",
+        "guiaNumero": "9",
+        "guiaNombre": "Marketing y Ventas",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Especificación de la realización de Marketing Digital, Marketing Green y Marketing de Contenidos.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p1",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 1,
+        "descripcion": "Recopilar información de expectativas y preferencias de servicio al cliente (muestra representativa, muestreo probabilístico, cuestionario con dimensiones de servicio y NPS).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p2",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 2,
+        "descripcion": "Analizar los resultados de la encuesta e identificar fortalezas y debilidades percibidas.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p3",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 3,
+        "descripcion": "Plan de acción de servicio al cliente (Objetivo, Meta, Estrategias, Acciones, Indicador, Beneficios, Presupuesto/Recursos, Tiempo, Responsable).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p4",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 4,
+        "descripcion": "Propuesta de manual de protocolo de atención al cliente (introducción, fundamentos, canales, situaciones específicas, conocimiento del producto, anexos).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p5",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 5,
+        "descripcion": "Programa de fidelización de clientes (objetivo, clientes objetivo, canales, tipo de programa, diseño de tarjeta/formulario/catálogo, presupuesto).",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p6",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 6,
+        "descripcion": "Formato en Excel para registro de principales clientes, datos, rotación, nivel de compras y promociones aplicables.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g10-p7",
+        "guiaNumero": "10",
+        "guiaNombre": "Atención y servicio al cliente",
+        "grupo": "Mercadeo",
+        "numeral": 7,
+        "descripcion": "Establecer cinco (5) indicadores de gestión para medir la satisfacción del servicio al cliente.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p1",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 1,
+        "descripcion": "Identificar necesidades y requerimientos para la gestión de inventarios.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p2",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 2,
+        "descripcion": "Propuesta de modelo de gestión de inventarios.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p3",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 3,
+        "descripcion": "Agrupación de productos/servicios por familias, codificación y generación de códigos de barras.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p4",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 4,
+        "descripcion": "Establecer cinco (5) estrategias para minimizar costos y alcanzar la eficiencia del inventario.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p5",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 5,
+        "descripcion": "Diseñar esquema completo de la cadena de suministro.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p6",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 6,
+        "descripcion": "Procedimiento para búsqueda, selección y seguimiento de proveedores.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g11-p7",
+        "guiaNumero": "11",
+        "guiaNombre": "Inventarios, Compras y Producción",
+        "grupo": "Inventarios",
+        "numeral": 7,
+        "descripcion": "Establecer cinco (5) indicadores de gestión para la administración de inventarios.",
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s1",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 1,
+        "descripcion": "Constitución de la empresa: Presente los siguientes documentos que creó en la Guía 1 - Fundamentos y Prácticas para la Gestión Administrativa y de cada uno explique brevemente que es y su importancia.",
+        "detallesExtra": {
+          "elementos": [
+            "Estatutos de la sociedad que simulo crear",
+            "Formulario para inscribirse en el RUES",
+            "Registro Único Tributario – RUT",
+            "Certificado de existencia y Representación Legal"
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s2",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 2,
+        "descripcion": "Caracterización Contable, Tributaria y Legal de la Empresa: Presente la empresa desde el ámbito Contable, Tributaria y Legal.",
+        "detallesExtra": {
+          "puntos": [
+            "Ámbito Contable: Clasificación en Grupo 2 de NIIF para Pymes (Decreto 2420 de 2015), marco normativo y devengo.",
+            "Ámbito Tributario: Persona jurídica perteneciente al Régimen Ordinario de Renta, responsable de IVA (bimestral), agente retenedor y declarante de ICA.",
+            "Ámbito Legal: Sociedad por Acciones Simplificada (S.A.S.) regida por la Ley 1258 de 2008 y Código de Comercio."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s3",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 3,
+        "descripcion": "Aspectos a tener en cuenta en la creación del proceso contable y tributario de la empresa",
+        "detallesExtra": {
+          "subsecciones": [
+            {
+              "subnumero": 1,
+              "titulo": "Marco legal y normativo",
+              "descripcion": "Presente y explique brevemente las principales normas contables y tributarias que la empresa debe tener en cuenta."
+            },
+            {
+              "subnumero": 2,
+              "titulo": "Contratación personal calificado",
+              "descripcion": "Presente la propuesta sobre la contratación de los apoyos en el área contable, presente tipo de contrato y explique brevemente."
+            }
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s4",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 4,
+        "descripcion": "Soluciones para la Gestión Contable y Tributaria en la empresa: Explique brevemente su propuesta de cada una de las siguientes soluciones con respecto a los siguientes temas.",
+        "detallesExtra": {
+          "puntos": [
+            "Documentos contables y no contables: manejo, archivo y conservación.",
+            "Mecanismos de facturación",
+            "Políticas contables",
+            "Cumplimiento con la definición y criterios de reconocimiento según el marco conceptual.",
+            "Responsabilidades tributarias (Impuestos que debe asumir y cumplir)",
+            "Seleccionar el medio para llevar control de la situación financiera de la empresa, como software de contabilidad, contratación de contador, etc.",
+            "Presente por ahora la propuesta de manejo del archivo en Excel que está trabajando Sistema de Información Contable en Excel.xlsx, donde le permite llevar contabilidad.",
+            "Para este caso que se va a trabajar un Sistema de Información Contable en Excel."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s5",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 5,
+        "descripcion": "Soluciones para la Gestión Financiera: Presente y explique brevemente la propuesta con su respectivo instructivo de uso de las herramientas de Matemáticas Financieras en la empresa trabajadas en el archivo en Excel: Sistema de Información Contable en Excel.xlsx.",
+        "detallesExtra": {
+          "herramientas": [
+            "Calculadora de amortización de créditos.",
+            "Conversor de tasas.",
+            "Calculo valor futuro y valor presente"
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s6",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 6,
+        "descripcion": "Soluciones para proceso de Liquidación de Nómina e Incentivos y Beneficios tributarios.",
+        "detallesExtra": {
+          "puntos": [
+            "Presente y explique brevemente la propuesta con su respectivo instructivo de uso de la herramienta de Liquidación de nómina trabajada por el GAES en el archivo Sistema de Información Contable en Excel.xlsx",
+            "Presente la propuesta de Incentivos y Beneficios tributarios que la empresa puede contemplar, como exoneración de aportes Art. 114-1 ET, beneficios por Contratación de Jóvenes, mujeres víctimas de violencia, personas con discapacidad, adultos mayores, entre otros."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s7",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 7,
+        "descripcion": "Soluciones para valuación de inventarios: Presente y explique brevemente la propuesta para la valuación de Inventarios",
+        "detallesExtra": {
+          "puntos": [
+            "Método de valuación adoptado: Promedio Ponderado para insumos y materias primas; PEPS (Primeros en Entrar, Primeros en Salir) para producto terminado perecedero.",
+            "Diseño e implementación de la tarjeta Kárdex bajo Sección 13 NIIF para Pymes.",
+            "Manejo contable de costos de adquisición, costos de transformación y registro de mermas operativas."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s8",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 8,
+        "descripcion": "Soluciones para medición y reconocimiento (registro contable) de los hechos económicos de la empresa",
+        "detallesExtra": {
+          "puntos": [
+            "Explique brevemente que es el ciclo contable y la importancia de la medición y reconocimiento (registro contable) de los hechos económicos de la empresa.",
+            "Explique brevemente como el archivo en Excel Sistema de Información Contable en Excel.xlsx que está trabajando, puede ser la herramienta para llevar contabilidad y control financiero de la empresa. Explique la funcionalidad y el paso a paso de como esta herramienta contribuye a manejar el ciclo contable de la empresa."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s9",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 9,
+        "descripcion": "Soluciones para la Generación y presentación de Estados Financieros",
+        "detallesExtra": {
+          "puntos": [
+            "Explique brevemente que son los Estados Financieros y la importancia para la empresa.",
+            "Explique brevemente como el archivo en Excel Sistema de Información Contable en Excel.xlsx luego de reconocer cada hecho económico de la empresa (registro de facturas), construye los siguientes Estados Financieros:"
+          ],
+          "estados_financieros": [
+            "Estado de la Situación Financiera",
+            "Estado de Resultados"
+          ],
+          "requerimientos_adicionales": [
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s10",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 10,
+        "descripcion": "Soluciones para Análisis Financiero: Explique brevemente que es y para que le sirve a la empresa hacer análisis financiero mediante el análisis horizontal y vertical y análisis mediante Razones Financieras. De igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para sus cálculos.",
+        "detallesExtra": {
+          "puntos": [
+            "Explique brevemente que es y para que le sirve a la empresa hacer análisis financiero mediante el análisis horizontal y vertical y análisis mediante Razones Financieras. De igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para sus cálculos.",
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s11",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 11,
+        "descripcion": "Soluciones para realizar el Presupuesto: Explique brevemente que es y para que le sirve a la empresa hacer presupuesto, de igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para hacerlo.",
+        "detallesExtra": {
+          "puntos": [
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      },
+      {
+        "id": "g12-15-s12",
+        "guiaNumero": "12 a 15",
+        "guiaNombre": "Informe de gestión contable",
+        "grupo": "Contabilidad",
+        "numeral": 12,
+        "descripcion": "Soluciones para evaluar la rentabilidad del Negocio: Explique brevemente que es y para que le sirve a la empresa evaluar la rentabilidad del negocio mediante la TIR, de igual forma explique como el Sistema de Información Contable en Excel.xlsx contribuye para hacerlo.",
+        "detallesExtra": {
+          "puntos": [
+            "Indique brevemente la funcionalidad del archivo en Excel.",
+            "Documente con fotos."
+          ]
+        },
+        "cumple": false,
+        "evidenciaTexto": ""
+      }
+    ],
+    "pesta": [
+      {
+        "id": "pes-new-1",
+        "category": "Político",
+        "factor": "Normatividad gubernamental que promueve el sector empresarial.",
+        "impactType": "Oportunidad",
+        "intensity": "Media",
+        "rationale": "Beneficios tributarios o programas de apoyo institucional.",
+        "evidenceSource": "Documento Conpes / Ley vigente"
+      },
+      {
+        "id": "pes-new-2",
+        "category": "Económico",
+        "factor": "Tasa de inflación e incremento en costo de materias primas.",
+        "impactType": "Amenaza",
+        "intensity": "Media",
+        "rationale": "Presión sobre la estructura de costos de producción.",
+        "evidenceSource": "DANE Boletín Económico"
+      }
+    ],
+    "mefi": [
+      {
+        "id": "mefi-new-1",
+        "type": "Fortaleza",
+        "factor": "Calidad superior y diferenciación del producto o servicio frente a la competencia.",
+        "weight": 0.3,
+        "rating": 4,
+        "weightedScore": 1.2,
+        "area": "Mercadeo",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefi-new-2",
+        "type": "Fortaleza",
+        "factor": "Compromiso y competencias técnicas del equipo humano fundador.",
+        "weight": 0.2,
+        "rating": 3,
+        "weightedScore": 0.6,
+        "area": "Talento Humano",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefi-new-3",
+        "type": "Debilidad",
+        "factor": "Capacidad instalada limitada y bajo nivel de automatización.",
+        "weight": 0.25,
+        "rating": 1,
+        "weightedScore": 0.25,
+        "area": "Operaciones",
+        "validationStatus": "Supuesto por Verificar"
+      },
+      {
+        "id": "mefi-new-4",
+        "type": "Debilidad",
+        "factor": "Limitada presencia en canales de comercialización y mercadeo digital.",
+        "weight": 0.25,
+        "rating": 2,
+        "weightedScore": 0.5,
+        "area": "Mercadeo",
+        "validationStatus": "Validado"
+      }
+    ],
+    "mefe": [
+      {
+        "id": "mefe-new-1",
+        "type": "Oportunidad",
+        "factor": "Crecimiento de la demanda en el segmento de mercado objetivo.",
+        "weight": 0.3,
+        "rating": 4,
+        "weightedScore": 1.2,
+        "pestaCategory": "Social",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefe-new-2",
+        "type": "Oportunidad",
+        "factor": "Acceso a convocatorias de capital semilla y fomento emprendedor.",
+        "weight": 0.2,
+        "rating": 3,
+        "weightedScore": 0.6,
+        "pestaCategory": "Económico",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefe-new-3",
+        "type": "Amenaza",
+        "factor": "Entrada de competidores consolidados con economías de escala.",
+        "weight": 0.25,
+        "rating": 2,
+        "weightedScore": 0.5,
+        "pestaCategory": "Económico",
+        "validationStatus": "Validado"
+      },
+      {
+        "id": "mefe-new-4",
+        "type": "Amenaza",
+        "factor": "Cambios regulatorios o exigencias de permisos sectoriales.",
+        "weight": 0.25,
+        "rating": 2,
+        "weightedScore": 0.5,
+        "pestaCategory": "Ambiental / Legal",
+        "validationStatus": "Supuesto por Verificar"
+      }
+    ],
+    "dofa": [
+      {
+        "id": "dofa-new-fo-1",
+        "code": "FO-1",
+        "type": "FO",
+        "title": "Penetración de mercado con producto diferenciado",
+        "description": "Aprovechar la calidad del producto y el crecimiento del mercado para posicionar la marca.",
+        "crossedFactors": [
+          "F1",
+          "O1"
+        ],
+        "priority": "Alta"
+      },
+      {
+        "id": "dofa-new-do-1",
+        "code": "DO-1",
+        "type": "DO",
+        "title": "Modernización con fuentes de financiamiento",
+        "description": "Postular a convocatorias para financiar maquinaria y ampliar capacidad de planta.",
+        "crossedFactors": [
+          "D3",
+          "O2"
+        ],
+        "priority": "Alta"
+      }
+    ],
+    "peyea": {
+      "financialStrength": [
+        {
+          "id": "ff-1",
+          "name": "Rendimiento sobre inversión",
+          "score": 3
+        },
+        {
+          "id": "ff-2",
+          "name": "Liquidez corriente",
+          "score": 4
+        }
+      ],
+      "competitiveAdvantage": [
+        {
+          "id": "vc-1",
+          "name": "Calidad del producto",
+          "score": -2
+        },
+        {
+          "id": "vc-2",
+          "name": "Participación de mercado",
+          "score": -4
+        }
+      ],
+      "environmentalStability": [
+        {
+          "id": "ea-1",
+          "name": "Estabilidad de precios",
+          "score": -3
+        },
+        {
+          "id": "ea-2",
+          "name": "Barreras de entrada",
+          "score": -3
+        }
+      ],
+      "industryStrength": [
+        {
+          "id": "fi-1",
+          "name": "Potencial de crecimiento",
+          "score": 4
+        },
+        {
+          "id": "fi-2",
+          "name": "Estabilidad financiera",
+          "score": 3
+        }
+      ],
+      "avgFF": 3.5,
+      "avgVC": -3,
+      "avgEA": -3,
+      "avgFI": 3.5,
+      "coordinateX": 0.5,
+      "coordinateY": 0.5,
+      "quadrant": "Agresivo",
+      "interpretation": "Postura Agresiva: Organización financieramente fuerte con ventajas competitivas relevantes en una industria atractiva. Estrategias: penetración de mercado, desarrollo de productos, integración vertical y expansión."
+    },
+    "mpc": {
+      "competitor1Name": "Competidor Alfa",
+      "competitor2Name": "Competidor Beta",
+      "factors": [
+        {
+          "id": "mpc-1",
+          "factor": "Calidad del producto",
+          "weight": 0.3,
+          "companyRating": 4,
+          "competitor1Rating": 3,
+          "competitor2Rating": 3
+        },
+        {
+          "id": "mpc-2",
+          "factor": "Precios competitivos",
+          "weight": 0.25,
+          "companyRating": 3,
+          "competitor1Rating": 4,
+          "competitor2Rating": 3
+        },
+        {
+          "id": "mpc-3",
+          "factor": "Canal de distribución",
+          "weight": 0.25,
+          "companyRating": 2,
+          "competitor1Rating": 4,
+          "competitor2Rating": 4
+        },
+        {
+          "id": "mpc-4",
+          "factor": "Servicio al cliente",
+          "weight": 0.2,
+          "companyRating": 4,
+          "competitor1Rating": 3,
+          "competitor2Rating": 3
+        }
+      ]
+    },
+    "bcg": [
+      {
+        "id": "bcg-1",
+        "productName": "Producto Principal",
+        "relativeMarketShare": 1.1,
+        "marketGrowthRatePercent": 15,
+        "companySalesPercent": 70,
+        "category": "Estrella",
+        "strategicAction": "Invertir para consolidar liderazgo de mercado."
+      },
+      {
+        "id": "bcg-2",
+        "productName": "Línea Complementaria",
+        "relativeMarketShare": 0.6,
+        "marketGrowthRatePercent": 12,
+        "companySalesPercent": 30,
+        "category": "Interrogante",
+        "strategicAction": "Evaluar tracción antes de comprometer mayores inversiones."
+      }
+    ],
+    "indicators": [
+      {
+        "id": "ind-fin-01",
+        "code": "IND-FIN-01",
+        "name": "Margen de Utilidad Neta",
+        "perspective": "Financiera",
+        "associatedObjectiveId": "bsc-fin-01",
+        "definition": "Mide la rentabilidad final generada por el proyecto.",
+        "formula": "(Utilidad Neta / Ventas Totales) * 100",
+        "unit": "%",
+        "periodicity": "Trimestral",
+        "baseline": 5,
+        "target": 12,
+        "greenRange": ">= 10.0%",
+        "yellowRange": "7.0% - 9.9%",
+        "redRange": "< 7.0%",
+        "dataSource": "Estado de Resultados Proyectado",
+        "responsibleRole": "Coordinador Financiero GAES"
+      },
+      {
+        "id": "ind-cli-01",
+        "code": "IND-CLI-01",
+        "name": "Crecimiento de Clientes Frecuentes",
+        "perspective": "Clientes",
+        "associatedObjectiveId": "bsc-cli-01",
+        "definition": "Número de clientes con recompra mensual.",
+        "formula": "Total clientes activos con recompra en el mes",
+        "unit": "Unidades",
+        "periodicity": "Mensual",
+        "baseline": 5,
+        "target": 30,
+        "greenRange": ">= 25 clientes",
+        "yellowRange": "15 - 24 clientes",
+        "redRange": "< 15 clientes",
+        "dataSource": "Registro de ventas y pedidos",
+        "responsibleRole": "Coordinador de Mercadeo GAES"
+      },
+      {
+        "id": "ind-pro-01",
+        "code": "IND-PRO-01",
+        "name": "Eficiencia Operacional de Producción",
+        "perspective": "Procesos Internos",
+        "associatedObjectiveId": "bsc-pro-01",
+        "definition": "Cumplimiento del programa mensual de producción.",
+        "formula": "(Unidades producidas conformes / Unidades programadas) * 100",
+        "unit": "%",
+        "periodicity": "Mensual",
+        "baseline": 70,
+        "target": 90,
+        "greenRange": ">= 88%",
+        "yellowRange": "75% - 87%",
+        "redRange": "< 75%",
+        "dataSource": "Planilla de producción",
+        "responsibleRole": "Coordinador de Operaciones GAES"
+      },
+      {
+        "id": "ind-apr-01",
+        "code": "IND-APR-01",
+        "name": "Cumplimiento del Plan de Capacitación Técnica",
+        "perspective": "Aprendizaje y Crecimiento",
+        "associatedObjectiveId": "bsc-apr-01",
+        "definition": "Porcentaje de módulos de formación técnica cursados por el GAES.",
+        "formula": "(Horas cursadas / Horas programadas) * 100",
+        "unit": "%",
+        "periodicity": "Trimestral",
+        "baseline": 50,
+        "target": 100,
+        "greenRange": ">= 90%",
+        "yellowRange": "70% - 89%",
+        "redRange": "< 70%",
+        "dataSource": "Control de asistencia formativa",
+        "responsibleRole": "Líder GAES"
+      }
+    ],
+    "bscObjectives": [
+      {
+        "id": "bsc-fin-01",
+        "code": "OBJ-FIN-01",
+        "perspective": "Financiera",
+        "title": "Alcanzar margen neto del 12% en el primer año",
+        "description": "Consolidar la rentabilidad del modelo de negocio.",
+        "matrixOrigin": "DOFA FO-1 | MEFI Fortaleza F1 | PEYEA Cuadrante Agresivo",
+        "primaryIndicatorId": "ind-fin-01",
+        "targetAnnual": "12% margen neto",
+        "strategicInitiative": "Plan de ventas y control de costos de materia prima.",
+        "estimatedBudgetCOP": 5000000,
+        "responsibleRole": "Coordinador Financiero"
+      },
+      {
+        "id": "bsc-cli-01",
+        "code": "OBJ-CLI-01",
+        "perspective": "Clientes",
+        "title": "Captar 30 clientes corporativos recurrentes",
+        "description": "Desarrollar cartera de clientes con pedidos programados.",
+        "matrixOrigin": "DOFA FO-1 | MEFE Oportunidad O1",
+        "primaryIndicatorId": "ind-cli-01",
+        "targetAnnual": "30 clientes recurrentes",
+        "strategicInitiative": "Campaña de prospección comercial directa.",
+        "estimatedBudgetCOP": 3000000,
+        "responsibleRole": "Coordinador de Mercadeo"
+      },
+      {
+        "id": "bsc-pro-01",
+        "code": "OBJ-PRO-01",
+        "perspective": "Procesos Internos",
+        "title": "Estandarizar el proceso productivo con 90% de eficiencia",
+        "description": "Reducir variaciones en tiempos y mermas.",
+        "matrixOrigin": "DOFA DO-1 | MEFI Debilidad D3",
+        "primaryIndicatorId": "ind-pro-01",
+        "targetAnnual": "90% de eficiencia de producción",
+        "strategicInitiative": "Manual de procedimientos y hojas de ruta de producción.",
+        "estimatedBudgetCOP": 2000000,
+        "responsibleRole": "Coordinador de Operaciones"
+      },
+      {
+        "id": "bsc-apr-01",
+        "code": "OBJ-APR-01",
+        "perspective": "Aprendizaje y Crecimiento",
+        "title": "Completar competencias técnicas en gestión de calidad",
+        "description": "Capacitar al equipo en normas técnicas sectoriales.",
+        "matrixOrigin": "MEFI Fortaleza F2 | Resultados de Aprendizaje Guía 16",
+        "primaryIndicatorId": "ind-apr-01",
+        "targetAnnual": "100% del plan de capacitación",
+        "strategicInitiative": "Talleres formativos complementarios SENA.",
+        "estimatedBudgetCOP": 1000000,
+        "responsibleRole": "Líder GAES"
+      }
+    ],
+    "bscLinks": [
+      {
+        "id": "link-1",
+        "fromObjectiveId": "bsc-apr-01",
+        "toObjectiveId": "bsc-pro-01",
+        "explanation": "La capacitación del equipo asegura la estandarización y eficiencia del proceso productivo."
+      },
+      {
+        "id": "link-2",
+        "fromObjectiveId": "bsc-pro-01",
+        "toObjectiveId": "bsc-cli-01",
+        "explanation": "Procesos estandarizados garantizan productos confiables que fidelizan clientes."
+      },
+      {
+        "id": "link-3",
+        "fromObjectiveId": "bsc-cli-01",
+        "toObjectiveId": "bsc-fin-01",
+        "explanation": "Mayor cartera de clientes recurrentes genera ventas sostenibles y rentabilidad."
+      }
+    ],
+    "isMatricesValidated": false,
+    "instructorEvaluation": {
+      "evaluatedAt": "",
+      "instructorName": "",
+      "instructorDocument": "",
+      "finalJudgment": "PENDIENTE DE EVALUACIÓN",
+      "productEvidenceScore": 0,
+      "performanceEvidenceScore": 0,
+      "isLocked": false,
+      "isDefinitiveSaved": false,
+      "criteria": [
+        {
+          "id": "crit-comp-21060100303",
+          "rapCode": "21060100303",
+          "title": "Plan de mejoramiento organizacional y ajuste de políticas",
+          "description": "Evaluar y ajustar la ejecución del plan de mejoramiento organizacional, de acuerdo con las políticas de la organización.",
+          "asociacionTrabajoRealizado": "Articulado con el Cuadro de Mando Integral (Balanced Scorecard), iniciativas estratégicas presupuestadas ($ COP), metas anuales de los 8 objetivos, matriz de planes de mejora (Luc Brunet) y el motor de auditoría algorítmica para calibrar desviaciones de desempeño.",
+          "nucleoAsociado": "Fase 4 (BSC) & Auditoría de Coherencia",
+          "toolsIncluded": "Balanced Scorecard (Kaplan & Norton), Mapa Causa-Efecto, Iniciativas Estratégicas y Presupuesto, Plan de Mejora Organizacional",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21010100503",
+          "rapCode": "21010100503",
+          "title": "Gestión del talento humano y evaluación del rendimiento",
+          "description": "Evaluar la gestión del talento según niveles de rendimiento, normas y procedimientos establecidos por la organización.",
+          "asociacionTrabajoRealizado": "Vinculado con la Perspectiva de Aprendizaje y Crecimiento del BSC, las Guías 4 a 6 de Talento Humano (manuales de funciones, perfiles de cargo, evaluación del desempeño por competencias 360°, KPIs de rotación y horas de capacitación técnica IND-APR-01).",
+          "nucleoAsociado": "Talento Humano & Perspectiva de Aprendizaje",
+          "toolsIncluded": "Perspectiva Aprendizaje & Crecimiento BSC, Ficha Técnica IND-APR-01, Macroprocesos de Talento Humano (Guías 4-6)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060100904",
+          "rapCode": "21060100904",
+          "title": "Diagnóstico organizacional y sistema de gestión de calidad",
+          "description": "Evaluar los resultados obtenidos del diagnóstico y de la implementación del plan de mejoramiento de acuerdo con las políticas de la organización, normas vigentes y el sistema de gestión de la calidad.",
+          "asociacionTrabajoRealizado": "Conectado con las Matrices Diagnósticas MEFI (Σ=1.00) y MEFE (Σ=1.00), factores críticos del sistema de gestión de calidad (Buenas Prácticas de Manufactura BPM, normas técnicas sectoriales, aseguramiento de inocuidad en planta) y plan de acciones correctivas.",
+          "nucleoAsociado": "Diagnóstico MEFI/MEFE & Gestión de Calidad",
+          "toolsIncluded": "Matriz MEFI (Factores Internos), Matriz MEFE (Factores Externos), Protocolos de Calidad e Inocuidad (Guías 1 y 11)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060100905",
+          "rapCode": "21060100905",
+          "title": "Clima organizacional propicio y desarrollo del talento humano",
+          "description": "Garantizar que el clima organizacional sea propicio para el cumplimiento de las actividades laborales, las políticas organizacionales y el desarrollo del talento humano, mediante las propuestas de mejoramiento del clima organizacional, de acuerdo con los resultados obtenidos.",
+          "asociacionTrabajoRealizado": "Respaldado en el estudio y diagnóstico de Clima Organizacional bajo el modelo Luc Brunet (Guía 5: 8 dimensiones evaluadas), diseño del plan de bienestar laboral, programas de incentivos y retención, comités de convivencia y políticas corporativas formalizadas en la plataforma estratégica.",
+          "nucleoAsociado": "Clima Organizacional & Bienestar Laboral",
+          "toolsIncluded": "Diagnóstico Clima Luc Brunet (8 Dimensiones), Plan de Bienestar y Políticas Organizacionales (Guía 5)",
+          "weight": 14,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21020103304",
+          "rapCode": "21020103304",
+          "title": "Programa de seguridad y salud en el trabajo (SG-SST)",
+          "description": "Evaluar el desarrollo del programa de salud ocupacional de acuerdo con las normas técnicas, de calidad y legales vigentes.",
+          "asociacionTrabajoRealizado": "Articulado con el Sistema de Gestión de la Seguridad y Salud en el Trabajo (SG-SST - Guía 6 bajo Decreto 1072/2015 y Res. 0312/2019), matriz de identificación de peligros y valoración de riesgos (GTC 45), plan de emergencias y protocolos de bioseguridad ocupacional.",
+          "nucleoAsociado": "Seguridad y Salud en el Trabajo (SG-SST)",
+          "toolsIncluded": "Matriz de Riesgos SG-SST (GTC 45), Plan de Emergencias, Protocolos de Bioseguridad y Salud Ocupacional (Guía 6)",
+          "weight": 11,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060101402",
+          "rapCode": "21060101402",
+          "title": "Evaluación socioeconómica y alternativas estratégicas de decisión",
+          "description": "Evaluar social y económicamente las alternativas de solución propuestas a la decisión, teniendo en cuenta la ponderación, criterios técnicos, el resultado que se persiga, las metodologías y tecnología disponible.",
+          "asociacionTrabajoRealizado": "Fundamentado en la formulación de la Matriz DOFA Cruzada (FO, DO, FA, DA), la Matriz PEYEA (vector direccional cartesiano), la Matriz BCG de cartera de productos y la evaluación financiera de rentabilidad (TIR = 28.4%, VPN = $42.8M COP, análisis vertical/horizontal y 12 razones financieras del informe de gestión contable Guías 12 a 15).",
+          "nucleoAsociado": "Estrategias DOFA, PEYEA & Evaluación Financiera",
+          "toolsIncluded": "Matriz DOFA Cruzada, Matriz PEYEA Vectorial, Matriz BCG, Evaluación Financiera TIR / VPN / Razones (Guías 12-15)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        },
+        {
+          "id": "crit-comp-21060101403",
+          "rapCode": "21060101403",
+          "title": "Procesos administrativos, logística empresarial y simulación matemática",
+          "description": "Verificar y caracterizar los procesos y procedimientos administrativos y de logística empresarial, en la toma de decisiones para el logro de los resultados, utilizando metodologías matemáticas y de simulación, teniendo en cuenta la tecnología disponible y la legislación vigente.",
+          "asociacionTrabajoRealizado": "Sustentado en la Matriz de Perfil Competitivo (MPC), el Análisis Macroentorno PESTA, la caracterización de la cadena de suministro y logística de distribución física (Guía 11), control de inventarios PEPS/Kárdex en Excel y fichas técnicas de indicadores logísticos y operacionales (Nivel de servicio OTIF 95% e índice de mermas 1.5%).",
+          "nucleoAsociado": "Logística, Simulación Matemática MPC & Operaciones",
+          "toolsIncluded": "Matriz MPC Ponderada, Análisis PESTA, Cadena de Suministro (Guía 11), Indicadores Operacionales OTIF y Mermas (IND-PRO-01/02)",
+          "weight": 15,
+          "score": 0,
+          "status": "Pendiente de Evaluación",
+          "feedback": "Pendiente de evaluación y retroalimentación técnica por el instructor asignado."
+        }
+      ],
+      "productObservation": "Pendiente de revisión técnica y emisión de juicio por el instructor.",
+      "performanceObservation": "Pendiente de sustentación y evaluación de desempeño por el instructor.",
+      "auditHistory": []
+    },
+    "version": 4,
+    "isLocked": false,
+    "isRosterConfirmed": true,
+    "isDemoProject": false,
+    "collaborationHistory": [
+      {
+        "id": "audit-9acd6079b619",
+        "timestamp": "2026-10-22T19:33:44.513Z",
+        "userId": "app-coord-7",
+        "userName": "Mateo Alejandro Ríos",
+        "userEmail": "mateo.rios@soy.sena.edu.co",
+        "gaesNumber": 7,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Caracterización GAES (Fase 1)",
+        "operationType": "MODIFICAR",
+        "previousVersion": "3",
+        "newVersion": "4",
+        "description": "Modificación de Caracterización GAES (Fase 1) por Mateo Alejandro Ríos"
+      },
+      {
+        "id": "audit-b810e4fa6016",
+        "timestamp": "2026-10-22T19:33:44.500Z",
+        "userId": "app-coord-7",
+        "userName": "Mateo Alejandro Ríos",
+        "userEmail": "mateo.rios@soy.sena.edu.co",
+        "gaesNumber": 7,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Caracterización GAES (Fase 1)",
+        "operationType": "MODIFICAR",
+        "previousVersion": "2",
+        "newVersion": "3",
+        "description": "Modificación de Caracterización GAES (Fase 1) por Mateo Alejandro Ríos"
+      },
+      {
+        "id": "audit-8a4af8333a85",
+        "timestamp": "2026-10-22T19:33:44.489Z",
+        "userId": "app-leader-7",
+        "userName": "Camila Andrea Ospina",
+        "userEmail": "camila.ospina@soy.sena.edu.co",
+        "gaesNumber": 7,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Confirmación y Bloqueo de GAES",
+        "operationType": "MODIFICAR",
+        "previousVersion": "1",
+        "newVersion": "2",
+        "description": "Conformación oficial del GAES 7 (BioEmpaques del Pacífico S.A.S.) confirmada y bloqueada por el líder Camila Andrea Ospina. Nómina de 2 integrantes asegurada."
+      },
+      {
+        "id": "audit-bc5f50af1111",
+        "timestamp": "2026-10-22T19:33:44.459Z",
+        "userId": "app-leader-7",
+        "userName": "Camila Andrea Ospina",
+        "userEmail": "camila.ospina@soy.sena.edu.co",
+        "gaesNumber": 7,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Registro Oficial de GAES y Empresa",
+        "operationType": "CREAR",
+        "newVersion": "1",
+        "description": "Registro inicial del GAES 7 (BioEmpaques del Pacífico S.A.S.) por el líder Camila Andrea Ospina."
+      }
+    ],
+    "rosterConfirmedAt": "2026-10-22T19:33:44.489Z",
+    "rosterConfirmedBy": "Camila Andrea Ospina"
+  },
+  {
     "id": "gaes-1-ecomoda",
     "gaesNumber": 1,
     "fichaNumber": "2687410",
@@ -4250,7 +7722,7 @@
     "programName": "Tecnólogo en Gestión Empresarial",
     "centerName": "Centro de Gestión y Desarrollo Agroindustrial",
     "regional": "Regional Valle del Cauca",
-    "lastUpdated": "2026-10-22T17:47:22.030Z",
+    "lastUpdated": "2026-10-22T19:35:09.686Z",
     "currentStep": 3,
     "isMatricesValidated": true,
     "matricesValidatedAt": "2026-10-08T09:30:00.000Z",
@@ -6389,9 +9861,24 @@
       "productObservation": "El GAES 3 presenta una evidencia de producto de altísima calidad. Las matrices estratégicas de la Guía 16 no son meros cuadros teóricos, sino que reflejan el modelo de negocio de AgroLácteos del Valle. El Balanced Scorecard articula metas financieras y de operaciones con sustento numérico real y se articula integralmente con las 7 competencias organizacionales SENA.",
       "performanceObservation": "En la sustentación se evidencia cohesión de equipo y dominio de los conceptos de evaluación estratégica. Cada aprendiz sustentó su área de competencia con solvencia frente a los 7 Resultados de Aprendizaje. Se recomienda continuar con este nivel de compromiso hacia la sustentación de la fase de Evaluación del proyecto formativo."
     },
-    "version": 5,
+    "version": 6,
     "isLocked": false,
     "collaborationHistory": [
+      {
+        "id": "audit-005347d8690f",
+        "timestamp": "2026-10-22T19:35:09.686Z",
+        "userId": "app-1",
+        "userName": "Valentina Restrepo Henao",
+        "userEmail": "vrestrepo@soy.sena.edu.co",
+        "gaesNumber": 3,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Empresa",
+        "operationType": "MODIFICAR",
+        "previousVersion": "5",
+        "newVersion": "6",
+        "description": "Ajuste de razón social oficial"
+      },
       {
         "id": "audit-129d29cc6b72",
         "timestamp": "2026-10-22T17:47:22.030Z",
@@ -6475,7 +9962,7 @@
     "programName": "Tecnólogo en Gestión Empresarial",
     "centerName": "Centro de Gestión y Desarrollo Agroindustrial",
     "regional": "Regional Valle del Cauca",
-    "lastUpdated": "2026-10-22T17:47:22.134Z",
+    "lastUpdated": "2026-10-22T19:35:09.774Z",
     "currentStep": 3,
     "isMatricesValidated": true,
     "matricesValidatedAt": "2026-10-09T12:00:00.000Z",
@@ -8508,9 +11995,39 @@
       "finalJudgment": "APROBADO",
       "instructorName": "Instructor SENA"
     },
-    "version": 4,
+    "version": 6,
     "isLocked": true,
     "collaborationHistory": [
+      {
+        "id": "audit-2eab101ef3a8",
+        "timestamp": "2026-10-22T19:35:09.774Z",
+        "userId": "inst-7b6a248b5ed2",
+        "userName": "Instructor Principal SENA",
+        "userEmail": "instructor.lider@sena.edu.co",
+        "gaesNumber": 4,
+        "fichaNumber": "2687410",
+        "phase": 6,
+        "component": "Evaluación",
+        "operationType": "EVALUAR",
+        "previousVersion": "5",
+        "newVersion": "6",
+        "description": "Evaluación definitiva Guía 16"
+      },
+      {
+        "id": "audit-99c025ba5ee7",
+        "timestamp": "2026-10-22T17:47:22.222Z",
+        "userId": "inst-7a656f09a972",
+        "userName": "Instructor Principal SENA",
+        "userEmail": "instructor.lider@sena.edu.co",
+        "gaesNumber": 4,
+        "fichaNumber": "2687410",
+        "phase": 6,
+        "component": "Reapertura de Proyecto Evaluado",
+        "operationType": "REAPERTURA",
+        "previousVersion": "4",
+        "newVersion": "5",
+        "description": "Reapertura formativa autorizada por Instructor Principal SENA. Motivo: Plan de Mejoramiento Formativo concertado bajo Reglamento del Aprendiz SENA para reajustar matriz MEFI y objetivos BSC."
+      },
       {
         "id": "audit-c5a718935b5e",
         "timestamp": "2026-10-22T17:47:22.134Z",
@@ -8571,7 +12088,7 @@
         "description": "Constitución formal del GAES 4 para la empresa LogiPack Soluciones S.A.S.."
       }
     ],
-    "reopenedAt": "2026-10-22T17:46:53.259Z",
+    "reopenedAt": "2026-10-22T17:47:22.222Z",
     "reopenedBy": "Instructor Principal SENA",
     "reopenReason": "Plan de Mejoramiento Formativo concertado bajo Reglamento del Aprendiz SENA para reajustar matriz MEFI y objetivos BSC."
   },

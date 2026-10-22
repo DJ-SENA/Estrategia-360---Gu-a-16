@@ -203,6 +203,29 @@ export default function App() {
       }
       showNotification(`Bienvenido Aprendiz (${user.email}). Fases 1 a 5 habilitadas.`);
     }
+
+    // Refresh projects from server with fresh token
+    if (user.token) {
+      fetch('/api/projects', {
+        headers: { Authorization: `Bearer ${user.token}` },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Error al recargar');
+          return res.json();
+        })
+        .then((data) => {
+          if (data.success && Array.isArray(data.projects)) {
+            setProjects(data.projects);
+            if (user.role === 'APRENDIZ' && user.gaesNumber) {
+              const target = data.projects.find((p: GAESProject) => p.gaesNumber === user.gaesNumber);
+              if (target) {
+                setCurrentProjectId(target.id);
+              }
+            }
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const handleLogout = async () => {
@@ -545,6 +568,7 @@ export default function App() {
             project={currentProject}
             onUpdateProject={handleUpdateCurrentProject}
             onNextStep={() => setCurrentStep(2)}
+            currentUser={currentUser}
           />
         )}
 

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import fs from 'fs';
 import { INITIAL_COHORT_PROJECTS } from './src/data/cohortMockProjects';
+import { createBlankGAESProject } from './src/data/mockProjects';
 import { GAESProject, AuditContributionRecord } from './src/types';
 
 dotenv.config();
@@ -106,6 +107,8 @@ function initializeProjectDatabase(): GAESProject[] {
     ...p,
     version: p.version || 1,
     isLocked: p.isLocked ?? (p.instructorEvaluation?.isDefinitiveSaved || false),
+    isRosterConfirmed: true,
+    isDemoProject: true,
     collaborationHistory: (p.collaborationHistory && p.collaborationHistory.length > 0) ? p.collaborationHistory : [
       {
         id: `audit-init-${idx + 1}`,
@@ -542,17 +545,74 @@ async function startServer() {
 
   /**
    * POST /api/projects
-   * Registro de un nuevo GAES previamente constituido (sin aprobación previa requerida).
+   * Registro inicial de un GAES previamente constituido por su líder (sin aprobación previa del instructor).
    */
   app.post('/api/projects', (req: Request, res: Response) => {
-    const session = getValidSession(req);
-    if (!session) {
-      return res.status(401).json({ success: false, error: 'Acceso no autenticado.' });
-    }
+    let session = getValidSession(req);
 
-    const newProjectData: GAESProject = req.body;
+    const newProjectData: Partial<GAESProject> = req.body;
     if (!newProjectData || !newProjectData.company || !newProjectData.gaesNumber) {
       return res.status(400).json({ success: false, error: 'Datos incompletos para el registro del GAES.' });
+    }
+
+    const ficha = (newProjectData.fichaNumber || '2687410').trim();
+    const gaesNum = Number(newProjectData.gaesNumber);
+
+    // Duplicate check: Prevent duplicate projects for the same GAES number in the same ficha
+    const existingSameGaes = storedProjects.find(
+      (p) => p.gaesNumber === gaesNum && p.fichaNumber?.trim() === ficha
+    );
+    if (existingSameGaes) {
+      return res.status(409).json({
+        success: false,
+        error: `Conflicto de registro: El GAES ${gaesNum} para la ficha ${ficha} (${existingSameGaes.company?.name || 'Empresa Registrada'}) ya ha sido constituido previamente en el sistema. Todos los integrantes deben ingresar utilizando sus credenciales individuales para acceder al proyecto compartido.`,
+      });
+    }
+
+    // Identify and validate leader apprentice
+    const leaderApprentice =
+      newProjectData.apprentices?.find((a) => a.role === 'Líder GAES') ||
+      newProjectData.apprentices?.[0];
+
+    if (!leaderApprentice || !leaderApprentice.email || !leaderApprentice.name) {
+      return res.status(400).json({
+        success: false,
+        error: 'Debe especificar los datos del aprendiz que actuará como Líder del GAES (nombre y correo institucional @soy.sena.edu.co).',
+      });
+    }
+
+    const normalizedLeaderEmail = leaderApprentice.email.trim().toLowerCase();
+    if (!/^[a-zA-Z0-9._%+-]+@soy\.sena\.edu\.co$/i.test(normalizedLeaderEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: 'El correo del líder del GAES debe pertenecer obligatoriamente al dominio institucional @soy.sena.edu.co.',
+      });
+    }
+
+    // If no existing session, establish one for the leader
+    let userToken = '';
+    let sessionUser: SessionUser;
+    if (session) {
+      sessionUser = session.user;
+    } else {
+      userToken = crypto.randomBytes(32).toString('hex');
+      sessionUser = {
+        id: leaderApprentice.id || `app-leader-${crypto.randomBytes(4).toString('hex')}`,
+        email: normalizedLeaderEmail,
+        name: leaderApprentice.name.trim(),
+        role: 'APRENDIZ',
+        fichaNumber: ficha,
+        gaesNumber: gaesNum,
+        regional: newProjectData.regional || 'Regional Valle del Cauca',
+        centerName: newProjectData.centerName || 'Centro de Gestión y Desarrollo Agroindustrial',
+        authenticatedAt: new Date().toISOString(),
+      };
+      activeSessions.set(userToken, {
+        token: userToken,
+        user: sessionUser,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + SESSION_TTL_MS,
+      });
     }
 
     const nextVersion = 1;
@@ -560,29 +620,57 @@ async function startServer() {
     const initAudit: AuditContributionRecord = {
       id: `audit-${crypto.randomBytes(6).toString('hex')}`,
       timestamp: now,
-      userId: session.user.id,
-      userName: session.user.name,
-      userEmail: session.user.email,
-      gaesNumber: newProjectData.gaesNumber,
-      fichaNumber: newProjectData.fichaNumber || '2687410',
+      userId: sessionUser.id,
+      userName: sessionUser.name,
+      userEmail: sessionUser.email,
+      gaesNumber: gaesNum,
+      fichaNumber: ficha,
       phase: 1,
       component: 'Registro Oficial de GAES y Empresa',
       operationType: 'CREAR',
       newVersion: '1',
-      description: `Registro inicial del GAES ${newProjectData.gaesNumber} (${newProjectData.company.name}) por ${session.user.name}.`,
+      description: `Registro inicial del GAES ${gaesNum} (${newProjectData.company.name}) por el líder ${sessionUser.name}.`,
     };
 
+    const baseBlank = createBlankGAESProject(gaesNum, ficha);
     const newProject: GAESProject = {
-      ...newProjectData,
-      id: newProjectData.id || `gaes-${newProjectData.gaesNumber}-${crypto.randomBytes(4).toString('hex')}`,
+      ...baseBlank,
+      id: newProjectData.id || `gaes-${gaesNum}-${ficha}-${Date.now()}`,
+      gaesNumber: gaesNum,
+      fichaNumber: ficha,
+      programName: newProjectData.programName || baseBlank.programName,
+      centerName: newProjectData.centerName || baseBlank.centerName,
+      regional: newProjectData.regional || baseBlank.regional,
+      company: {
+        ...baseBlank.company,
+        name: newProjectData.company.name.trim(),
+        nit: newProjectData.company.nit || baseBlank.company.nit,
+        sector: newProjectData.company.sector || baseBlank.company.sector,
+        size: newProjectData.company.size || baseBlank.company.size,
+        city: newProjectData.company.city || baseBlank.company.city,
+        ciiuCode: newProjectData.company.ciiuCode || baseBlank.company.ciiuCode,
+        mainProduct: newProjectData.company.mainProduct || baseBlank.company.mainProduct,
+        valueProposition: newProjectData.company.valueProposition || baseBlank.company.valueProposition,
+        targetMarket: newProjectData.company.targetMarket || baseBlank.company.targetMarket,
+        annualRevenueEstimated: newProjectData.company.annualRevenueEstimated || baseBlank.company.annualRevenueEstimated,
+      },
+      apprentices: newProjectData.apprentices && newProjectData.apprentices.length > 0 ? newProjectData.apprentices : [leaderApprentice],
       version: nextVersion,
       isLocked: false,
+      isRosterConfirmed: false,
+      isDemoProject: false,
+      currentStep: 1,
       lastUpdated: now,
       collaborationHistory: [initAudit],
     };
 
     saveProjectsToDisk([newProject, ...storedProjects]);
-    return res.status(201).json({ success: true, project: newProject });
+    return res.status(201).json({
+      success: true,
+      project: newProject,
+      token: userToken || session?.token,
+      user: sessionUser,
+    });
   });
 
   /**
@@ -654,12 +742,44 @@ async function startServer() {
       sanitizedUpdates.instructorEvaluation = existing.instructorEvaluation;
     }
 
+    // Roster lock protection:
+    // If project roster is already confirmed, apprentices cannot add, delete, or replace members, nor change gaesNumber or company.name
+    if (existing.isRosterConfirmed && session.user.role === 'APRENDIZ') {
+      sanitizedUpdates.apprentices = existing.apprentices;
+      sanitizedUpdates.gaesNumber = existing.gaesNumber;
+      if (sanitizedUpdates.company) {
+        sanitizedUpdates.company = {
+          ...sanitizedUpdates.company,
+          name: existing.company.name, // Protected company name
+        };
+      }
+    }
+
     const nextVersion = serverVersion + 1;
     const now = new Date().toISOString();
+
+    // Leader confirming the roster for the first time:
+    const isConfirmingRosterNow = Boolean(sanitizedUpdates.isRosterConfirmed && !existing.isRosterConfirmed);
+    if (isConfirmingRosterNow) {
+      const candidates = sanitizedUpdates.apprentices || existing.apprentices || [];
+      if (!candidates.some((a: any) => a.role === 'Líder GAES')) {
+        return res.status(400).json({
+          success: false,
+          error: 'Debe designar formalmente al menos un integrante con el rol de Líder GAES antes de confirmar.',
+        });
+      }
+      sanitizedUpdates.isRosterConfirmed = true;
+      sanitizedUpdates.rosterConfirmedAt = now;
+      sanitizedUpdates.rosterConfirmedBy = session.user.name;
+    }
 
     // Determine phase & component
     const phase = typeof phaseIntervened === 'number' ? phaseIntervened : (updatedProject.currentStep || existing.currentStep || 1);
     const component = componentIntervened || (phase === 1 ? 'Caracterización GAES (Fase 1)' : phase === 2 ? 'Insumos y Entregables (Fase 2)' : phase === 3 ? 'Matrices Estratégicas (Fase 3)' : phase === 4 ? 'Balanced Scorecard (Fase 4)' : phase === 5 ? 'Auditoría de Coherencia (Fase 5)' : 'Panel de Evaluación (Fase 6)');
+
+    const auditDescription = isConfirmingRosterNow
+      ? `Conformación oficial del GAES ${existing.gaesNumber} (${existing.company.name}) confirmada y bloqueada por el líder ${session.user.name}. Nómina de ${(sanitizedUpdates.apprentices || existing.apprentices).length} integrantes asegurada.`
+      : changeSummary || (session.user.role === 'INSTRUCTOR' ? `Evaluación o retroalimentación registrada por ${session.user.name}` : `Modificación de ${component} por ${session.user.name}`);
 
     const auditRecord: AuditContributionRecord = {
       id: `audit-${crypto.randomBytes(6).toString('hex')}`,
@@ -674,7 +794,7 @@ async function startServer() {
       operationType: session.user.role === 'INSTRUCTOR' ? 'EVALUAR' : 'MODIFICAR',
       previousVersion: String(serverVersion),
       newVersion: String(nextVersion),
-      description: changeSummary || (session.user.role === 'INSTRUCTOR' ? `Evaluación o retroalimentación registrada por ${session.user.name}` : `Modificación de ${component} por ${session.user.name}`),
+      description: auditDescription,
     };
 
     // If instructor saved definitive evaluation, automatically lock project

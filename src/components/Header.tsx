@@ -104,11 +104,28 @@ export const Header: React.FC<HeaderProps> = ({
                 className="bg-transparent text-xs text-slate-200 font-medium py-1 pr-6 pl-1 focus:outline-none cursor-pointer"
                 title="Seleccionar GAES a evaluar"
               >
-                {projectsList.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
-                    GAES {p.gaesNumber}: {p.company.name}
-                  </option>
-                ))}
+                {projectsList.some((p) => !p.isDemoProject) && (
+                  <optgroup label="Proyectos Reales Formativos" className="bg-slate-900 text-emerald-400 font-semibold">
+                    {projectsList
+                      .filter((p) => !p.isDemoProject)
+                      .map((p) => (
+                        <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
+                          GAES {p.gaesNumber}: {p.company.name} (Ficha {p.fichaNumber})
+                        </option>
+                      ))}
+                  </optgroup>
+                )}
+                {projectsList.some((p) => p.isDemoProject) && (
+                  <optgroup label="Proyectos de Demostración (Pruebas)" className="bg-slate-900 text-amber-400 font-semibold">
+                    {projectsList
+                      .filter((p) => p.isDemoProject)
+                      .map((p) => (
+                        <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
+                          [DEMO] GAES {p.gaesNumber}: {p.company.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                )}
               </select>
               <button
                 onClick={onNewProject}

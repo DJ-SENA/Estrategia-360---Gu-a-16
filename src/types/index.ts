@@ -333,5 +333,9 @@ export interface GAESProject {
   reopenedAt?: string;
   reopenedBy?: string;
   reopenReason?: string;
+  isRosterConfirmed?: boolean;
+  rosterConfirmedAt?: string;
+  rosterConfirmedBy?: string;
+  isDemoProject?: boolean;
   collaborationHistory?: AuditContributionRecord[];
 }

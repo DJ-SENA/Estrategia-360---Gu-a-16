@@ -14,14 +14,25 @@ import {
   Edit2,
   Check,
   X,
-  AlertCircle
+  AlertCircle,
+  Lock,
+  Unlock,
+  CheckCircle2,
+  AlertTriangle,
+  UserCheck
 } from 'lucide-react';
 import { GAESProject, Apprentice, EconomicSector, CompanySize } from '../types';
 
 interface Step1Props {
   project: GAESProject;
-  onUpdateProject: (updated: Partial<GAESProject>) => void;
+  onUpdateProject: (
+    updated: Partial<GAESProject>,
+    changeSummary?: string,
+    phaseIntervened?: number,
+    componentIntervened?: string
+  ) => void;
   onNextStep: () => void;
+  currentUser?: { role: string; name?: string; email?: string } | null;
 }
 
 const SECTORS: EconomicSector[] = [
@@ -50,6 +61,7 @@ export const Step1_Registration: React.FC<Step1Props> = ({
   project,
   onUpdateProject,
   onNextStep,
+  currentUser,
 }) => {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberDocument, setNewMemberDocument] = useState('');
@@ -59,6 +71,9 @@ export const Step1_Registration: React.FC<Step1Props> = ({
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [memberError, setMemberError] = useState<string | null>(null);
   const [step1ValidationMsg, setStep1ValidationMsg] = useState<string | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const isRosterLocked = Boolean(project.isRosterConfirmed);
 
   const handleValidateAndNext = () => {
     if (!project.company?.name || !project.company.name.trim()) {
@@ -75,8 +90,53 @@ export const Step1_Registration: React.FC<Step1Props> = ({
     onNextStep();
   };
 
+  const handleOpenConfirmModal = () => {
+    setMemberError(null);
+    if (!project.company?.name || !project.company.name.trim()) {
+      setMemberError('Debe ingresar la razón social de la empresa asignada antes de confirmar la conformación.');
+      return;
+    }
+    if (!project.apprentices || project.apprentices.length === 0) {
+      setMemberError('El GAES debe tener al menos un integrante registrado.');
+      return;
+    }
+    const hasLeader = project.apprentices.some((a) => a.role === 'Líder GAES');
+    if (!hasLeader) {
+      setMemberError('Debe designar formalmente al menos un integrante con el rol de "Líder GAES" antes de confirmar.');
+      return;
+    }
+    const invalidEmail = project.apprentices.find(
+      (a) => !/^[a-zA-Z0-9._%+-]+@soy\.sena\.edu\.co$/i.test(a.email.trim())
+    );
+    if (invalidEmail) {
+      setMemberError(`El aprendiz "${invalidEmail.name}" tiene correo no institucional (${invalidEmail.email}). Todos los integrantes deben tener correo @soy.sena.edu.co.`);
+      return;
+    }
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmRoster = () => {
+    onUpdateProject(
+      {
+        isRosterConfirmed: true,
+        rosterConfirmedAt: new Date().toISOString(),
+        rosterConfirmedBy: currentUser?.name || 'Líder del GAES',
+      },
+      `Conformación oficial del GAES ${project.gaesNumber} (${project.company.name}) y nómina bloqueada definitivamente por el líder`,
+      1,
+      'Conformación y Bloqueo de GAES'
+    );
+    setIsConfirmModalOpen(false);
+    setStep1ValidationMsg('¡Conformación del GAES confirmada y bloqueada exitosamente! La nómina y la empresa han sido aseguradas.');
+    setTimeout(() => setStep1ValidationMsg(null), 6000);
+  };
+
   const handleAddMember = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRosterLocked) {
+      setMemberError('La conformación del GAES ya se encuentra bloqueada. No se permite agregar nuevos integrantes.');
+      return;
+    }
     if (!newMemberName.trim()) return;
     setMemberError(null);
 
@@ -97,7 +157,7 @@ export const Step1_Registration: React.FC<Step1Props> = ({
 
     onUpdateProject({
       apprentices: [...project.apprentices, newApprentice],
-    });
+    }, `Adición de integrante ${newApprentice.name} (${newApprentice.role}) al GAES ${project.gaesNumber}`);
 
     setNewMemberName('');
     setNewMemberDocument('');
@@ -106,12 +166,20 @@ export const Step1_Registration: React.FC<Step1Props> = ({
   };
 
   const handleUpdateMember = (id: string, updates: Partial<Apprentice>) => {
+    if (isRosterLocked) {
+      setMemberError('La nómina del GAES está bloqueada. No se pueden modificar los integrantes.');
+      return;
+    }
     onUpdateProject({
       apprentices: project.apprentices.map((a) => (a.id === id ? { ...a, ...updates } : a)),
-    });
+    }, 'Actualización de datos de integrante');
   };
 
   const handleRemoveMember = (id: string) => {
+    if (isRosterLocked) {
+      setMemberError('La nómina del GAES está bloqueada. No se pueden eliminar integrantes.');
+      return;
+    }
     if (project.apprentices.length <= 1) {
       setMemberError('El GAES debe mantener al menos un aprendiz líder registrado.');
       setTimeout(() => setMemberError(null), 4000);
@@ -120,10 +188,15 @@ export const Step1_Registration: React.FC<Step1Props> = ({
     setMemberError(null);
     onUpdateProject({
       apprentices: project.apprentices.filter((a) => a.id !== id),
-    });
+    }, 'Eliminación de integrante del GAES');
   };
 
   const updateCompanyField = (field: keyof typeof project.company, value: any) => {
+    if (isRosterLocked && field === 'name') {
+      setStep1ValidationMsg('La empresa objeto de estudio está bloqueada tras la confirmación del GAES y no puede ser sustituida.');
+      setTimeout(() => setStep1ValidationMsg(null), 4000);
+      return;
+    }
     onUpdateProject({
       company: {
         ...project.company,
@@ -152,7 +225,7 @@ export const Step1_Registration: React.FC<Step1Props> = ({
                 Registro del Proyecto Formativo & Caracterización del GAES
               </h2>
               <p className="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
-                Cada Grupo Autónomo de Estudio SENA (GAES) registra sus integrantes y la información base de la empresa proyecto. Esta información alimentará de forma coherente las matrices de la Guía 16 y el Balanced Scorecard.
+                Cada Grupo Autónomo de Estudio SENA (GAES) registra sus integrantes y la información base de la empresa proyecto. Esta información alimenta de forma coherente las matrices de la Guía 16 y el Balanced Scorecard.
               </p>
             </div>
           </div>
@@ -166,37 +239,119 @@ export const Step1_Registration: React.FC<Step1Props> = ({
         </div>
       </div>
 
+      {/* Roster Confirmation Status Banner */}
+      {isRosterLocked ? (
+        <div className="bg-emerald-950/50 border border-emerald-500/40 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-emerald-300">
+                  Conformación Oficial del GAES Confirmada y Bloqueada
+                </span>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">
+                  {project.rosterConfirmedAt ? new Date(project.rosterConfirmedAt).toLocaleDateString('es-CO') : 'Confirmado'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-0.5">
+                La conformación de los {project.apprentices.length} integrantes y la empresa asignada ({project.company.name}) han sido consolidadas definitivamente. No se pueden agregar, eliminar ni sustituir integrantes. Los datos complementarios de caracterización empresarial permanecen habilitados para su actualización continua.
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl shrink-0 flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Nómina Asegurada</span>
+          </span>
+        </div>
+      ) : (
+        <div className="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <Unlock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-amber-300">
+                  Registro Inicial del GAES en Edición Previa
+                </span>
+                <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
+                  Pendiente de Confirmación por Líder
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-0.5">
+                El líder debe registrar una sola vez la empresa asignada y la nómina completa de integrantes con correos @soy.sena.edu.co. Al finalizar, confirme y bloquee la conformación para evitar duplicidades o alteraciones posteriores.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleOpenConfirmModal}
+            className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-lg shadow-emerald-950 transition-all shrink-0 hover:scale-[1.02]"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Confirmar y Bloquear GAES</span>
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: GAES Info & Members (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* GAES Administrative Data */}
           <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Identificación del Grupo SENA</span>
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Identificación del Grupo SENA</span>
+              </h3>
+              {isRosterLocked && (
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Ficha y GAES Fijos
+                </span>
+              )}
+            </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="text-slate-400 font-medium block mb-1">Número de GAES</label>
+                <label className="text-slate-400 font-medium block mb-1 flex items-center justify-between">
+                  <span>Número de GAES</span>
+                  {isRosterLocked && <Lock className="w-3 h-3 text-amber-400" />}
+                </label>
                 <input
                   type="number"
                   min="1"
                   max="20"
+                  disabled={isRosterLocked}
                   value={project.gaesNumber}
                   onChange={(e) => onUpdateProject({ gaesNumber: Number(e.target.value) || 1 })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:border-emerald-500 focus:outline-none"
+                  className={`w-full bg-slate-900 border rounded-lg px-3 py-2 text-white font-bold focus:outline-none ${
+                    isRosterLocked
+                      ? 'border-slate-800 opacity-70 cursor-not-allowed bg-slate-950'
+                      : 'border-slate-700 focus:border-emerald-500'
+                  }`}
+                  title={isRosterLocked ? 'Bloqueado tras confirmación del líder' : 'Número de GAES'}
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 font-medium block mb-1">Ficha de Formación</label>
+                <label className="text-slate-400 font-medium block mb-1 flex items-center justify-between">
+                  <span>Ficha de Formación</span>
+                  {isRosterLocked && <Lock className="w-3 h-3 text-amber-400" />}
+                </label>
                 <input
                   type="text"
+                  disabled={isRosterLocked}
                   value={project.fichaNumber}
                   onChange={(e) => onUpdateProject({ fichaNumber: e.target.value })}
                   placeholder="Ej. 2687410"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono font-medium focus:border-emerald-500 focus:outline-none"
+                  className={`w-full bg-slate-900 border rounded-lg px-3 py-2 text-white font-mono font-medium focus:outline-none ${
+                    isRosterLocked
+                      ? 'border-slate-800 opacity-70 cursor-not-allowed bg-slate-950'
+                      : 'border-slate-700 focus:border-emerald-500'
+                  }`}
+                  title={isRosterLocked ? 'Bloqueado tras confirmación del líder' : 'Ficha SENA'}
                 />
               </div>
 
@@ -239,7 +394,13 @@ export const Step1_Registration: React.FC<Step1Props> = ({
                 <Users className="w-4 h-4 text-emerald-400" />
                 <span>Integrantes del GAES ({project.apprentices.length})</span>
               </h3>
-              <span className="text-[11px] text-slate-400">Roles por competencia</span>
+              {isRosterLocked ? (
+                <span className="text-[10px] text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Nómina Bloqueada
+                </span>
+              ) : (
+                <span className="text-[11px] text-slate-400">Roles por competencia</span>
+              )}
             </div>
 
             {/* Error Alert */}
@@ -262,7 +423,8 @@ export const Step1_Registration: React.FC<Step1Props> = ({
             {/* List */}
             <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
               {project.apprentices.map((app) => {
-                const isEditing = editingMemberId === app.id;
+                const isEditing = editingMemberId === app.id && !isRosterLocked;
+                const isLeader = app.role === 'Líder GAES';
 
                 if (isEditing) {
                   return (
@@ -289,7 +451,7 @@ export const Step1_Registration: React.FC<Step1Props> = ({
                           type="email"
                           value={app.email}
                           onChange={(e) => handleUpdateMember(app.id, { email: e.target.value })}
-                          placeholder="Correo"
+                          placeholder="aprendiz@soy.sena.edu.co"
                           className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-teal-400"
                         />
                         <select
@@ -321,12 +483,22 @@ export const Step1_Registration: React.FC<Step1Props> = ({
                 return (
                   <div
                     key={app.id}
-                    className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 flex items-center justify-between gap-2 text-xs hover:border-slate-600 transition-colors"
+                    className={`bg-slate-900/80 border rounded-xl p-3 flex items-center justify-between gap-2 text-xs transition-colors ${
+                      isLeader
+                        ? 'border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 to-slate-900/80'
+                        : 'border-slate-700/60 hover:border-slate-600'
+                    }`}
                   >
                     <div className="space-y-0.5 truncate flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-slate-100 truncate">{app.name}</span>
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                        <span
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 ${
+                            isLeader
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold'
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          }`}
+                        >
                           {app.role}
                         </span>
                       </div>
@@ -335,76 +507,96 @@ export const Step1_Registration: React.FC<Step1Props> = ({
                         <span className="truncate">{app.email}</span>
                       </div>
                     </div>
+
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setEditingMemberId(app.id)}
-                        className="text-slate-400 hover:text-teal-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-                        title="Editar datos del aprendiz"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMember(app.id)}
-                        className="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-                        title="Eliminar aprendiz"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {isRosterLocked ? (
+                        <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Registrado</span>
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setEditingMemberId(app.id)}
+                            className="text-slate-400 hover:text-teal-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                            title="Editar datos del aprendiz"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMember(app.id)}
+                            className="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                            title="Eliminar aprendiz"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Add member form */}
-            <form onSubmit={handleAddMember} className="bg-slate-900/90 border border-slate-700 rounded-xl p-3 space-y-2 text-xs">
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wide block">
-                + Agregar Aprendiz al GAES
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="Nombre completo"
-                  value={newMemberName}
-                  onChange={(e) => setNewMemberName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
-                />
-                <input
-                  type="text"
-                  placeholder="No. Documento / T.I. / C.C."
-                  value={newMemberDocument}
-                  onChange={(e) => setNewMemberDocument(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
-                />
-                <input
-                  type="email"
-                  placeholder="aprendiz@soy.sena.edu.co"
-                  value={newMemberEmail}
-                  onChange={(e) => setNewMemberEmail(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
-                />
-                <select
-                  value={newMemberRole}
-                  onChange={(e) => setNewMemberRole(e.target.value as any)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
-                >
-                  {ROLES.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
+            {/* If roster is locked, show protection badge instead of add form */}
+            {isRosterLocked ? (
+              <div className="p-3 bg-slate-900/90 border border-emerald-500/30 rounded-xl text-xs text-slate-300 flex items-center gap-2.5">
+                <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
+                <p className="text-[11px] text-slate-300">
+                  <strong>Nómina formalizada y protegida:</strong> Los integrantes registrados disponen de acceso individual al proyecto compartido de este GAES. No se permiten adhesiones ni exclusiones directas.
+                </p>
               </div>
-              <button
-                type="submit"
-                className="w-full bg-emerald-600/90 hover:bg-emerald-500 text-white font-medium py-1.5 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Registrar Integrante</span>
-              </button>
-            </form>
+            ) : (
+              /* Add member form */
+              <form onSubmit={handleAddMember} className="bg-slate-900/90 border border-slate-700 rounded-xl p-3 space-y-2 text-xs">
+                <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wide block">
+                  + Agregar Aprendiz al GAES
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Nombre completo"
+                    value={newMemberName}
+                    onChange={(e) => setNewMemberName(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="No. Documento / T.I. / C.C."
+                    value={newMemberDocument}
+                    onChange={(e) => setNewMemberDocument(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
+                  />
+                  <input
+                    type="email"
+                    placeholder="aprendiz@soy.sena.edu.co"
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
+                  />
+                  <select
+                    value={newMemberRole}
+                    onChange={(e) => setNewMemberRole(e.target.value as any)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-emerald-500"
+                  >
+                    {ROLES.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-emerald-600/90 hover:bg-emerald-500 text-white font-medium py-1.5 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Registrar Integrante</span>
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
@@ -414,21 +606,36 @@ export const Step1_Registration: React.FC<Step1Props> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-emerald-400" />
-                <span>Información Básica de la Empresa Objeto de Estudio</span>
+                <span>Información de la Empresa Objeto de Estudio</span>
               </h3>
-              <span className="text-[11px] bg-slate-900 text-emerald-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
-                Proyecto Formativo
-              </span>
+              {isRosterLocked ? (
+                <span className="text-[11px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-mono flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Empresa Asignada Fija
+                </span>
+              ) : (
+                <span className="text-[11px] bg-slate-900 text-emerald-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
+                  Proyecto Formativo
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="text-slate-400 font-medium block mb-1">Razón Social de la Empresa</label>
+                <label className="text-slate-400 font-medium block mb-1 flex items-center justify-between">
+                  <span>Razón Social de la Empresa</span>
+                  {isRosterLocked && <Lock className="w-3 h-3 text-amber-400" />}
+                </label>
                 <input
                   type="text"
+                  disabled={isRosterLocked}
                   value={project.company.name}
                   onChange={(e) => updateCompanyField('name', e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-semibold focus:border-emerald-500 focus:outline-none"
+                  className={`w-full bg-slate-900 border rounded-lg px-3 py-2 text-white font-semibold focus:outline-none ${
+                    isRosterLocked
+                      ? 'border-slate-800 opacity-75 cursor-not-allowed bg-slate-950'
+                      : 'border-slate-700 focus:border-emerald-500'
+                  }`}
+                  title={isRosterLocked ? 'Bloqueado tras la confirmación de conformación del GAES' : 'Nombre de la empresa'}
                 />
               </div>
 
@@ -549,24 +756,121 @@ export const Step1_Registration: React.FC<Step1Props> = ({
             <div className="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex items-start gap-2.5 text-xs text-slate-300">
               <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <p>
-                <strong>Nota formativa SENA:</strong> Todos los datos de la empresa alimentarán directamente la formulación de las matrices de la Guía 16 en el Paso 3. Asegúrate de que el sector y la propuesta de valor coincidan con los diagnósticos de las guías anteriores.
+                <strong>Nota formativa SENA:</strong> Los datos complementarios de caracterización empresarial (NIT, sector, CIIU, tamaño, producto estrella, propuesta de valor, segmento y ventas) pueden seguir actualizándose cuando las actividades académicas lo requieran, aún después de bloqueada la conformación del GAES.
               </p>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Confirmation & Lock Modal */}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  Confirmación y Bloqueo Definitivo de Conformación
+                </h3>
+                <p className="text-xs text-slate-300">
+                  Verificación de datos por el Líder del GAES
+                </p>
+              </div>
+            </div>
+
+            {/* Summary Review Card */}
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-800 text-[11px]">
+                <div>
+                  <span className="text-slate-400 block">Ficha de Formación:</span>
+                  <span className="text-white font-mono font-bold">{project.fichaNumber}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">Grupo Asignado:</span>
+                  <span className="text-emerald-400 font-bold">GAES {project.gaesNumber}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-slate-400 block">Empresa Objeto de Estudio:</span>
+                  <span className="text-white font-semibold">{project.company.name}</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-slate-400 text-[11px] font-semibold block mb-1.5">
+                  Nómina de Integrantes ({project.apprentices.length}):
+                </span>
+                <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                  {project.apprentices.map((a) => (
+                    <div
+                      key={a.id}
+                      className="flex items-center justify-between bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px]"
+                    >
+                      <div className="truncate mr-2">
+                        <span className="text-slate-200 font-medium block truncate">{a.name}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{a.email}</span>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                          a.role === 'Líder GAES'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-slate-800 text-slate-300'
+                        }`}
+                      >
+                        {a.role}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Irreversible lock warning notice */}
+            <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200 text-xs space-y-1 leading-relaxed">
+              <span className="font-bold flex items-center gap-1.5 text-amber-300">
+                <Lock className="w-3.5 h-3.5" />
+                Acción Irreversible de Conformación:
+              </span>
+              <p className="text-[11px] text-slate-300">
+                Al confirmar, la conformación del GAES quedará <strong>permanentemente bloqueada</strong>. No se podrán añadir, suprimir ni sustituir integrantes, ni cambiar el GAES ni la empresa asignada. La caracterización estratégica complementaria podrá seguir diligenciándose normalmente.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsConfirmModalOpen(false)}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors"
+              >
+                Cancelar y Revisar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRoster}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-lg shadow-emerald-950 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>Sí, Confirmar y Bloquear</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Navigation & Validation Strip */}
       <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="text-xs text-slate-400">
           {step1ValidationMsg ? (
-            <span className="text-rose-400 font-semibold flex items-center gap-1.5 animate-in fade-in">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="text-emerald-400 font-semibold flex items-center gap-1.5 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
               {step1ValidationMsg}
             </span>
           ) : (
             <span className="text-slate-400">
-              Paso 1: Todos los cambios en aprendices y empresa se guardan en tiempo real.
+              Paso 1: Todos los cambios guardados con trazabilidad individual y control de concurrencia.
             </span>
           )}
         </div>
