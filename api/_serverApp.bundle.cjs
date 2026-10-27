@@ -25512,8 +25512,59 @@ var memoryProjects = [];
 var memorySessions = /* @__PURE__ */ new Map();
 var pgPool = null;
 var isPgInitialized = false;
+var lastPgError = null;
 var IS_VERCEL = Boolean(process.env.VERCEL || process.env.NOW_REGION);
-var DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+var RAW_DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+var DATABASE_URL = RAW_DB_URL ? RAW_DB_URL.trim().replace(/^['"]|['"]$/g, "") : void 0;
+function sanitizeError(err) {
+  if (!err) return "Error desconocido de persistencia.";
+  let msg = err.message || String(err);
+  if (DATABASE_URL) {
+    try {
+      const parsed = new URL(DATABASE_URL);
+      if (parsed.password) {
+        msg = msg.split(parsed.password).join("********");
+      }
+    } catch {
+    }
+  }
+  return msg;
+}
+function getSanitizedDbInfo() {
+  if (!DATABASE_URL) {
+    return {
+      configured: false,
+      hostMasked: null,
+      databaseName: null,
+      userMasked: null,
+      sslConfigured: false
+    };
+  }
+  try {
+    const parsed = new URL(DATABASE_URL);
+    const hostParts = parsed.hostname.split(".");
+    const hostMasked = hostParts.length > 2 ? `${hostParts[0].substring(0, 5)}***.${hostParts.slice(1).join(".")}` : parsed.hostname;
+    const userMasked = parsed.username ? `${parsed.username.substring(0, 3)}***` : null;
+    const sslConfigured = Boolean(
+      parsed.searchParams.get("sslmode") === "require" || parsed.searchParams.get("ssl") === "true" || !parsed.hostname.includes("localhost")
+    );
+    return {
+      configured: true,
+      hostMasked,
+      databaseName: parsed.pathname.replace(/^\//, "") || "neondb",
+      userMasked,
+      sslConfigured
+    };
+  } catch {
+    return {
+      configured: true,
+      hostMasked: "ep-***.neon.tech",
+      databaseName: "neondb",
+      userMasked: "neondb_owner",
+      sslConfigured: true
+    };
+  }
+}
 function validateProjectSchema(project) {
   if (!project || typeof project !== "object") return false;
   if (!project.id || typeof project.id !== "string") return false;
@@ -25546,19 +25597,29 @@ function getInitialSeededProjects() {
     ]
   }));
 }
+function getOrCreatePgPool() {
+  if (!DATABASE_URL) return null;
+  if (pgPool) return pgPool;
+  const isLocalhost = DATABASE_URL.includes("localhost") || DATABASE_URL.includes("127.0.0.1");
+  pgPool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: isLocalhost ? false : { rejectUnauthorized: false },
+    max: 10,
+    idleTimeoutMillis: 3e4,
+    connectionTimeoutMillis: 1e4
+  });
+  pgPool.on("error", (err) => {
+    console.error("[Storage:PostgreSQL] Error inesperado en cliente inactivo del pool:", sanitizeError(err));
+  });
+  return pgPool;
+}
 async function initPostgres() {
   if (!DATABASE_URL) return false;
   if (isPgInitialized && pgPool) return true;
   try {
-    const isLocalhost = DATABASE_URL.includes("localhost") || DATABASE_URL.includes("127.0.0.1");
-    pgPool = new Pool({
-      connectionString: DATABASE_URL,
-      ssl: isLocalhost ? false : { rejectUnauthorized: false },
-      max: 10,
-      idleTimeoutMillis: 3e4,
-      connectionTimeoutMillis: 5e3
-    });
-    const client = await pgPool.connect();
+    const pool = getOrCreatePgPool();
+    if (!pool) return false;
+    const client = await pool.connect();
     try {
       await client.query(`
         CREATE TABLE IF NOT EXISTS sena_gaes_projects (
@@ -25582,39 +25643,48 @@ async function initPostgres() {
           created_at BIGINT NOT NULL,
           expires_at BIGINT NOT NULL
         );
+
+        CREATE INDEX IF NOT EXISTS idx_sena_gaes_ficha ON sena_gaes_projects (gaes_number, ficha_number);
+        CREATE INDEX IF NOT EXISTS idx_sena_active_sessions_expires ON sena_active_sessions (expires_at);
       `);
-      const countRes = await client.query("SELECT COUNT(*) FROM sena_gaes_projects");
-      const count = parseInt(countRes.rows[0].count, 10);
-      if (count === 0) {
-        console.log("[Storage:PostgreSQL] Base de datos vac\xEDa. Sembrando proyectos de cohorte...");
-        const seeded = getInitialSeededProjects();
-        for (const proj of seeded) {
-          await client.query(`
-            INSERT INTO sena_gaes_projects (id, gaes_number, ficha_number, company_name, is_roster_confirmed, is_demo_project, is_locked, version, data)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            ON CONFLICT (gaes_number, ficha_number) DO NOTHING
-          `, [
-            proj.id,
-            proj.gaesNumber,
-            proj.fichaNumber || "2687410",
-            proj.company.name,
-            Boolean(proj.isRosterConfirmed),
-            Boolean(proj.isDemoProject),
-            Boolean(proj.isLocked),
-            proj.version || 1,
-            JSON.stringify(proj)
-          ]);
+      const allowDemoSeed = process.env.SEED_DEMO_PROJECTS === "true";
+      if (allowDemoSeed) {
+        const countRes = await client.query("SELECT COUNT(*) FROM sena_gaes_projects");
+        const count = parseInt(countRes.rows[0].count, 10);
+        if (count === 0) {
+          console.log("[Storage:PostgreSQL] SEED_DEMO_PROJECTS=true autorizado. Sembrando proyectos de cohorte...");
+          const seeded = getInitialSeededProjects();
+          for (const proj of seeded) {
+            await client.query(`
+              INSERT INTO sena_gaes_projects (id, gaes_number, ficha_number, company_name, is_roster_confirmed, is_demo_project, is_locked, version, data)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+              ON CONFLICT (gaes_number, ficha_number) DO NOTHING
+            `, [
+              proj.id,
+              proj.gaesNumber,
+              proj.fichaNumber || "2687410",
+              proj.company.name,
+              Boolean(proj.isRosterConfirmed),
+              Boolean(proj.isDemoProject),
+              Boolean(proj.isLocked),
+              proj.version || 1,
+              JSON.stringify(proj)
+            ]);
+          }
+          console.log(`[Storage:PostgreSQL] ${seeded.length} proyectos sembrados.`);
         }
-        console.log(`[Storage:PostgreSQL] ${seeded.length} proyectos sembrados exitosamente.`);
       }
       isPgInitialized = true;
-      console.log("[Storage:PostgreSQL] Conexi\xF3n y esquema validados exitosamente.");
+      lastPgError = null;
+      console.log("[Storage:PostgreSQL] Tablas verificadas e inicializadas en Neon PostgreSQL.");
       return true;
     } finally {
       client.release();
     }
   } catch (err) {
-    console.error("[Storage:PostgreSQL] Error al inicializar PostgreSQL:", err);
+    const errorSanitized = sanitizeError(err);
+    console.error("[Storage:PostgreSQL] Error al inicializar PostgreSQL:", errorSanitized);
+    lastPgError = errorSanitized;
     isPgInitialized = false;
     return false;
   }
@@ -25622,7 +25692,7 @@ async function initPostgres() {
 function atomicSaveToFile(projects) {
   if (IS_VERCEL) {
     memoryProjects = projects;
-    return true;
+    return false;
   }
   try {
     if (!import_fs.default.existsSync(DATA_DIR)) {
@@ -25647,6 +25717,9 @@ function atomicSaveToFile(projects) {
   }
 }
 function loadFromFile() {
+  if (IS_VERCEL) {
+    return [];
+  }
   try {
     if (!import_fs.default.existsSync(DATA_DIR)) {
       import_fs.default.mkdirSync(DATA_DIR, { recursive: true });
@@ -25678,7 +25751,9 @@ function loadFromFile() {
   atomicSaveToFile(seeded);
   return seeded;
 }
-memoryProjects = loadFromFile();
+if (!IS_VERCEL) {
+  memoryProjects = loadFromFile();
+}
 var serverStorage = {
   /**
    * Initializes PostgreSQL if credentials are provided in environment
@@ -25690,21 +25765,156 @@ var serverStorage = {
     return false;
   },
   /**
-   * Returns all stored projects, checking PostgreSQL first, then file/memory
+   * Real, active verification of database connection via live SQL query
+   */
+  async verifyDatabaseConnection() {
+    const dbInfo = getSanitizedDbInfo();
+    const startTime = Date.now();
+    if (!DATABASE_URL) {
+      return {
+        success: !IS_VERCEL,
+        activeAdapter: IS_VERCEL ? "IN_MEMORY_VERCEL" : "JSON_FILE",
+        isPermanent: !IS_VERCEL,
+        isVercelEnvironment: IS_VERCEL,
+        databaseConfigured: false,
+        databaseTarget: dbInfo,
+        liveConnection: {
+          pingOk: false,
+          connectedDatabase: null,
+          connectedUser: null,
+          serverVersionSnippet: null,
+          latencyMs: 0,
+          tablesFound: [],
+          totalProjectsInDatabase: 0,
+          activeSessionsInDatabase: 0
+        },
+        error: IS_VERCEL ? "DATABASE_URL no est\xE1 configurada en las variables de entorno de Vercel. Se requiere PostgreSQL (Neon) para persistencia permanente." : void 0,
+        warningNotice: IS_VERCEL ? "Persistencia ef\xEDmera en Vercel: Se requiere DATABASE_URL para evitar p\xE9rdida de datos entre lambdas." : void 0
+      };
+    }
+    try {
+      const pool = getOrCreatePgPool();
+      if (!pool) {
+        throw new Error("No se pudo instanciar el pool de conexiones PostgreSQL.");
+      }
+      const client = await pool.connect();
+      try {
+        const pingRes = await client.query("SELECT current_database() as db, current_user as usr, version() as ver");
+        const latencyMs = Date.now() - startTime;
+        const currentDb = pingRes.rows[0]?.db || null;
+        const currentUser = pingRes.rows[0]?.usr || null;
+        const fullVer = pingRes.rows[0]?.ver || "";
+        const serverVersionSnippet = fullVer.split(" ")[0] + " " + (fullVer.split(" ")[1] || "");
+        const tablesRes = await client.query(`
+          SELECT table_name 
+          FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+            AND table_name IN ('sena_gaes_projects', 'sena_active_sessions')
+        `);
+        const tablesFound = tablesRes.rows.map((r) => r.table_name);
+        let totalProjects = 0;
+        let activeSessions = 0;
+        if (tablesFound.includes("sena_gaes_projects")) {
+          const projCount = await client.query("SELECT COUNT(*) FROM sena_gaes_projects");
+          totalProjects = parseInt(projCount.rows[0].count, 10);
+        }
+        if (tablesFound.includes("sena_active_sessions")) {
+          const sessCount = await client.query("SELECT COUNT(*) FROM sena_active_sessions");
+          activeSessions = parseInt(sessCount.rows[0].count, 10);
+        }
+        isPgInitialized = tablesFound.includes("sena_gaes_projects");
+        lastPgError = null;
+        return {
+          success: true,
+          activeAdapter: "POSTGRESQL",
+          isPermanent: true,
+          isVercelEnvironment: IS_VERCEL,
+          databaseConfigured: true,
+          databaseTarget: dbInfo,
+          liveConnection: {
+            pingOk: true,
+            connectedDatabase: currentDb,
+            connectedUser: currentUser,
+            serverVersionSnippet,
+            latencyMs,
+            tablesFound,
+            totalProjectsInDatabase: totalProjects,
+            activeSessionsInDatabase: activeSessions
+          }
+        };
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      const sanitized = sanitizeError(err);
+      lastPgError = sanitized;
+      isPgInitialized = false;
+      return {
+        success: false,
+        activeAdapter: IS_VERCEL ? "IN_MEMORY_VERCEL" : "JSON_FILE",
+        isPermanent: false,
+        isVercelEnvironment: IS_VERCEL,
+        databaseConfigured: true,
+        databaseTarget: dbInfo,
+        liveConnection: {
+          pingOk: false,
+          connectedDatabase: null,
+          connectedUser: null,
+          serverVersionSnippet: null,
+          latencyMs: Date.now() - startTime,
+          tablesFound: [],
+          totalProjectsInDatabase: 0,
+          activeSessionsInDatabase: 0
+        },
+        error: `Fallo en conexi\xF3n en vivo con Neon PostgreSQL: ${sanitized}`,
+        warningNotice: "La base de datos PostgreSQL configurada en DATABASE_URL no responde o rechaz\xF3 la conexi\xF3n."
+      };
+    }
+  },
+  /**
+   * Explicitly ensures the tables are created in PostgreSQL idempotently
+   */
+  async ensureSchemaInitialized() {
+    if (!DATABASE_URL) {
+      return { success: false, tablesCreated: [], error: "DATABASE_URL no est\xE1 configurada." };
+    }
+    const ok = await initPostgres();
+    if (!ok) {
+      return { success: false, tablesCreated: [], error: lastPgError || "Error al conectar a PostgreSQL." };
+    }
+    return {
+      success: true,
+      tablesCreated: ["sena_gaes_projects", "sena_active_sessions"]
+    };
+  },
+  /**
+   * Returns all stored projects.
+   * In Vercel, strictly queries PostgreSQL to prevent serving stale/ephemeral RAM data.
    */
   async getAllProjects() {
     if (DATABASE_URL) {
       const ok = await initPostgres();
-      if (ok && pgPool) {
+      if (!ok) {
+        if (IS_VERCEL) {
+          throw new Error(`Persistencia fallida en Vercel: No se pudo conectar a Neon PostgreSQL (${lastPgError || "Error de conexi\xF3n"}). Se proh\xEDbe el uso de memoria ef\xEDmera.`);
+        }
+      } else if (pgPool) {
         try {
           const res = await pgPool.query("SELECT data FROM sena_gaes_projects ORDER BY gaes_number ASC");
           const projects = res.rows.map((r) => r.data);
           memoryProjects = projects;
           return projects;
         } catch (err) {
-          console.error("[Storage:PostgreSQL] Error al consultar proyectos:", err);
+          const sanitized = sanitizeError(err);
+          console.error("[Storage:PostgreSQL] Error al consultar proyectos:", sanitized);
+          if (IS_VERCEL) {
+            throw new Error(`Error en consulta a Neon PostgreSQL: ${sanitized}`);
+          }
         }
       }
+    }
+    if (IS_VERCEL && !DATABASE_URL) {
+      throw new Error("Persistencia bloqueada: La variable DATABASE_URL es obligatoria en Vercel.");
     }
     if (!IS_VERCEL) {
       memoryProjects = loadFromFile();
@@ -25725,8 +25935,13 @@ var serverStorage = {
           }
           return null;
         } catch (err) {
-          console.error("[Storage:PostgreSQL] Error al consultar por ID:", err);
+          console.error("[Storage:PostgreSQL] Error al consultar por ID:", sanitizeError(err));
+          if (IS_VERCEL) {
+            throw new Error(`Error al consultar proyecto en PostgreSQL: ${sanitizeError(err)}`);
+          }
         }
+      } else if (IS_VERCEL) {
+        throw new Error(`Fallo de conexi\xF3n PostgreSQL al consultar proyecto: ${lastPgError || "Desconectado"}`);
       }
     }
     return memoryProjects.find((p) => p.id === id) || null;
@@ -25749,8 +25964,13 @@ var serverStorage = {
           }
           return null;
         } catch (err) {
-          console.error("[Storage:PostgreSQL] Error al consultar por GAES y ficha:", err);
+          console.error("[Storage:PostgreSQL] Error al consultar por GAES y ficha:", sanitizeError(err));
+          if (IS_VERCEL) {
+            throw new Error(`Error en consulta por GAES y ficha: ${sanitizeError(err)}`);
+          }
         }
+      } else if (IS_VERCEL) {
+        throw new Error(`Fallo de conexi\xF3n PostgreSQL al buscar GAES: ${lastPgError || "Desconectado"}`);
       }
     }
     return memoryProjects.find(
@@ -25759,20 +25979,23 @@ var serverStorage = {
   },
   /**
    * Saves or updates a project (upsert)
+   * In Vercel, rejects memory fallback so the user is never lied to about persistence.
    */
   async saveProject(project) {
     if (!validateProjectSchema(project)) {
-      return { success: false, error: "Esquema de proyecto no v\xE1lido." };
-    }
-    const existingIdx = memoryProjects.findIndex((p) => p.id === project.id);
-    if (existingIdx !== -1) {
-      memoryProjects[existingIdx] = project;
-    } else {
-      memoryProjects.unshift(project);
+      return { success: false, error: "Esquema de proyecto no v\xE1lido para persistencia." };
     }
     if (DATABASE_URL) {
       const ok2 = await initPostgres();
-      if (ok2 && pgPool) {
+      if (!ok2 || !pgPool) {
+        const errorMsg = lastPgError ? `Error de conexi\xF3n con Neon PostgreSQL: ${lastPgError}` : "No se pudo conectar a la base de datos PostgreSQL.";
+        if (IS_VERCEL) {
+          return {
+            success: false,
+            error: `${errorMsg}. Operaci\xF3n de guardado rechazada para evitar p\xE9rdida de datos en memoria ef\xEDmera de Vercel.`
+          };
+        }
+      } else {
         try {
           await pgPool.query(`
             INSERT INTO sena_gaes_projects (
@@ -25799,15 +26022,31 @@ var serverStorage = {
             project.version || 1,
             JSON.stringify(project)
           ]);
+          const existingIdx = memoryProjects.findIndex((p) => p.id === project.id);
+          if (existingIdx !== -1) {
+            memoryProjects[existingIdx] = project;
+          } else {
+            memoryProjects.unshift(project);
+          }
           return { success: true };
         } catch (err) {
-          console.error("[Storage:PostgreSQL] Error al guardar proyecto:", err);
-          return { success: false, error: err?.message || "Error en base de datos PostgreSQL." };
+          const sanitized = sanitizeError(err);
+          console.error("[Storage:PostgreSQL] Error al guardar proyecto:", sanitized);
+          return {
+            success: false,
+            error: `Error al persistir en Neon PostgreSQL: ${sanitized}`
+          };
         }
       }
     }
+    if (IS_VERCEL) {
+      return {
+        success: false,
+        error: "Persistencia rechazada: En Vercel no se permite almacenar datos en memoria ef\xEDmera. Configure la variable DATABASE_URL con Neon PostgreSQL."
+      };
+    }
     const ok = atomicSaveToFile(memoryProjects);
-    return { success: ok };
+    return { success: ok, error: ok ? void 0 : "Error al escribir archivo JSON local." };
   },
   /**
    * Session Management: Saves an active session
@@ -25826,7 +26065,7 @@ var serverStorage = {
               expires_at = EXCLUDED.expires_at
           `, [session.token, JSON.stringify(session.user), session.createdAt, session.expiresAt]);
         } catch (err) {
-          console.error("[Storage:PostgreSQL] Error al guardar sesi\xF3n:", err);
+          console.error("[Storage:PostgreSQL] Error al guardar sesi\xF3n:", sanitizeError(err));
         }
       }
     }
@@ -25856,7 +26095,7 @@ var serverStorage = {
           }
           return null;
         } catch (err) {
-          console.error("[Storage:PostgreSQL] Error al recuperar sesi\xF3n:", err);
+          console.error("[Storage:PostgreSQL] Error al recuperar sesi\xF3n:", sanitizeError(err));
         }
       }
     }
@@ -25881,7 +26120,7 @@ var serverStorage = {
     }
   },
   /**
-   * Returns complete diagnostic storage status
+   * Returns synchronous status snapshot
    */
   getStatus() {
     const hasDb = Boolean(DATABASE_URL);
@@ -25894,7 +26133,7 @@ var serverStorage = {
     } else if (IS_VERCEL) {
       activeAdapter = "IN_MEMORY_VERCEL";
       isPermanent = false;
-      warningNotice = "Persistencia temporal en Vercel Serverless: Los archivos locales son ef\xEDmeros y de solo lectura. Para guardar proyectos y sesiones de forma permanente en Vercel, debe configurarse la variable DATABASE_URL con una base de datos PostgreSQL (Neon, Supabase o Vercel Postgres).";
+      warningNotice = "Persistencia temporal en Vercel Serverless: Los archivos locales son ef\xEDmeros. Para guardar proyectos y sesiones de forma permanente en Vercel, debe configurarse DATABASE_URL con Neon PostgreSQL.";
     } else {
       activeAdapter = "JSON_FILE";
       isPermanent = true;
@@ -25904,7 +26143,7 @@ var serverStorage = {
       isPermanent,
       isVercelEnvironment: IS_VERCEL,
       hasDatabaseUrl: hasDb,
-      databaseProvider: hasDb ? "PostgreSQL (Conexi\xF3n configurada)" : "Ninguno (Almacenamiento JSON local)",
+      databaseProvider: hasDb ? "PostgreSQL (Neon Cloud Relational)" : "Ninguno (Almacenamiento JSON local)",
       totalProjects: memoryProjects.length,
       warningNotice
     };
@@ -25991,22 +26230,24 @@ async function getValidSessionAsync(req) {
 }
 var apiRouter = import_express.default.Router();
 apiRouter.get("/health", async (_req, res) => {
-  const storageStatus = serverStorage.getStatus();
+  const liveStorage = await serverStorage.verifyDatabaseConnection();
   res.json({
     status: "ok",
     hasGemini: Boolean(ai),
     time: (/* @__PURE__ */ new Date()).toISOString(),
-    storage: storageStatus
+    storage: liveStorage
   });
 });
-apiRouter.get("/storage/status", (_req, res) => {
-  const status = serverStorage.getStatus();
-  res.json({
-    ...status,
-    activeAdapter: status.hasDatabaseUrl ? "PostgresStorageAdapter (Persistent Relational Cloud Database)" : status.isVercelEnvironment ? "InMemoryVercelAdapter (Ephemeral - Needs DATABASE_URL)" : "JsonFileStorageAdapter (Atomic Writes & Recovery)",
-    postgresAdapterReady: true,
-    hasPostgresConnection: status.hasDatabaseUrl,
-    vercelDeploymentWarning: "En Vercel Serverless, los archivos locales son ef\xEDmeros y no persisten entre ejecuciones de lambdas. Se debe configurar DATABASE_URL (PostgreSQL en Neon, Supabase o Vercel Postgres) para persistencia permanente en Vercel."
+apiRouter.get("/storage/status", async (_req, res) => {
+  const status = await serverStorage.verifyDatabaseConnection();
+  res.json(status);
+});
+apiRouter.post("/storage/init", async (_req, res) => {
+  const result = await serverStorage.ensureSchemaInitialized();
+  const liveCheck = await serverStorage.verifyDatabaseConnection();
+  return res.json({
+    ...result,
+    verification: liveCheck
   });
 });
 apiRouter.post("/auth/login", async (req, res) => {
@@ -26018,7 +26259,15 @@ apiRouter.post("/auth/login", async (req, res) => {
       error: "Debe ingresar un correo electr\xF3nico institucional."
     });
   }
-  const allProjects = await serverStorage.getAllProjects();
+  let allProjects;
+  try {
+    allProjects = await serverStorage.getAllProjects();
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      error: `Error de persistencia: ${err.message || "No se pudo consultar la base de datos PostgreSQL en Neon."}`
+    });
+  }
   if (role === "APRENDIZ") {
     if (normalizedEmail.endsWith("@sena.edu.co")) {
       return res.status(400).json({
@@ -26218,7 +26467,15 @@ apiRouter.get("/projects", async (req, res) => {
       error: "Acceso no autenticado. Inicie sesi\xF3n para consultar los proyectos."
     });
   }
-  const allProjects = await serverStorage.getAllProjects();
+  let allProjects;
+  try {
+    allProjects = await serverStorage.getAllProjects();
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      error: `Error de persistencia: ${err.message || "Fallo de consulta en base de datos PostgreSQL."}`
+    });
+  }
   if (session.user.role === "INSTRUCTOR") {
     return res.json({
       success: true,
@@ -26239,7 +26496,15 @@ apiRouter.get("/projects/:id", async (req, res) => {
       error: "Acceso no autenticado."
     });
   }
-  const project = await serverStorage.getProjectById(req.params.id);
+  let project;
+  try {
+    project = await serverStorage.getProjectById(req.params.id);
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      error: `Error de persistencia: ${err.message || "Fallo al consultar la base de datos PostgreSQL."}`
+    });
+  }
   if (!project) {
     return res.status(404).json({
       success: false,
@@ -26358,7 +26623,13 @@ apiRouter.post("/projects", async (req, res) => {
     lastUpdated: now,
     collaborationHistory: [initAudit]
   };
-  await serverStorage.saveProject(newProject);
+  const saveResult = await serverStorage.saveProject(newProject);
+  if (!saveResult.success) {
+    return res.status(500).json({
+      success: false,
+      error: saveResult.error || "Error al persistir el proyecto en la base de datos PostgreSQL."
+    });
+  }
   return res.status(201).json({
     success: true,
     project: newProject,
@@ -26467,7 +26738,13 @@ apiRouter.put("/projects/:id", async (req, res) => {
     lastUpdated: now,
     collaborationHistory: [auditRecord, ...existing.collaborationHistory || []]
   };
-  await serverStorage.saveProject(mergedProject);
+  const saveResult = await serverStorage.saveProject(mergedProject);
+  if (!saveResult.success) {
+    return res.status(500).json({
+      success: false,
+      error: saveResult.error || "Error al persistir la actualizaci\xF3n en la base de datos PostgreSQL."
+    });
+  }
   return res.json({
     success: true,
     project: mergedProject
@@ -26527,7 +26804,13 @@ apiRouter.post("/projects/:id/reopen", async (req, res) => {
     },
     collaborationHistory: [reopenAudit, ...existing.collaborationHistory || []]
   };
-  await serverStorage.saveProject(reopenedProject);
+  const saveResult = await serverStorage.saveProject(reopenedProject);
+  if (!saveResult.success) {
+    return res.status(500).json({
+      success: false,
+      error: saveResult.error || "Error al guardar la reapertura en la base de datos PostgreSQL."
+    });
+  }
   return res.json({
     success: true,
     message: "Proyecto reabierto exitosamente para ajustes formativos.",

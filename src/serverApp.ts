@@ -115,32 +115,34 @@ const apiRouter = express.Router();
  * GET /health
  */
 apiRouter.get('/health', async (_req: Request, res: Response) => {
-  const storageStatus = serverStorage.getStatus();
+  const liveStorage = await serverStorage.verifyDatabaseConnection();
   res.json({
     status: 'ok',
     hasGemini: Boolean(ai),
     time: new Date().toISOString(),
-    storage: storageStatus,
+    storage: liveStorage,
   });
 });
 
 /**
  * GET /storage/status
- * Diagnóstico completo del adaptador de persistencia y advertencias Vercel
+ * Diagnóstico en vivo de la conexión con Neon PostgreSQL
  */
-apiRouter.get('/storage/status', (_req: Request, res: Response) => {
-  const status = serverStorage.getStatus();
-  res.json({
-    ...status,
-    activeAdapter: status.hasDatabaseUrl
-      ? 'PostgresStorageAdapter (Persistent Relational Cloud Database)'
-      : status.isVercelEnvironment
-      ? 'InMemoryVercelAdapter (Ephemeral - Needs DATABASE_URL)'
-      : 'JsonFileStorageAdapter (Atomic Writes & Recovery)',
-    postgresAdapterReady: true,
-    hasPostgresConnection: status.hasDatabaseUrl,
-    vercelDeploymentWarning:
-      'En Vercel Serverless, los archivos locales son efímeros y no persisten entre ejecuciones de lambdas. Se debe configurar DATABASE_URL (PostgreSQL en Neon, Supabase o Vercel Postgres) para persistencia permanente en Vercel.',
+apiRouter.get('/storage/status', async (_req: Request, res: Response) => {
+  const status = await serverStorage.verifyDatabaseConnection();
+  res.json(status);
+});
+
+/**
+ * POST /storage/init
+ * Inicialización controlada e idempotente de tablas en PostgreSQL
+ */
+apiRouter.post('/storage/init', async (_req: Request, res: Response) => {
+  const result = await serverStorage.ensureSchemaInitialized();
+  const liveCheck = await serverStorage.verifyDatabaseConnection();
+  return res.json({
+    ...result,
+    verification: liveCheck,
   });
 });
 
@@ -159,7 +161,15 @@ apiRouter.post('/auth/login', async (req: Request, res: Response) => {
     });
   }
 
-  const allProjects = await serverStorage.getAllProjects();
+  let allProjects: GAESProject[];
+  try {
+    allProjects = await serverStorage.getAllProjects();
+  } catch (err: any) {
+    return res.status(503).json({
+      success: false,
+      error: `Error de persistencia: ${err.message || 'No se pudo consultar la base de datos PostgreSQL en Neon.'}`,
+    });
+  }
 
   if (role === 'APRENDIZ') {
     if (normalizedEmail.endsWith('@sena.edu.co')) {
@@ -405,7 +415,15 @@ apiRouter.get('/projects', async (req: Request, res: Response) => {
     });
   }
 
-  const allProjects = await serverStorage.getAllProjects();
+  let allProjects: GAESProject[];
+  try {
+    allProjects = await serverStorage.getAllProjects();
+  } catch (err: any) {
+    return res.status(503).json({
+      success: false,
+      error: `Error de persistencia: ${err.message || 'Fallo de consulta en base de datos PostgreSQL.'}`,
+    });
+  }
 
   if (session.user.role === 'INSTRUCTOR') {
     return res.json({
@@ -433,7 +451,15 @@ apiRouter.get('/projects/:id', async (req: Request, res: Response) => {
     });
   }
 
-  const project = await serverStorage.getProjectById(req.params.id);
+  let project: GAESProject | null;
+  try {
+    project = await serverStorage.getProjectById(req.params.id);
+  } catch (err: any) {
+    return res.status(503).json({
+      success: false,
+      error: `Error de persistencia: ${err.message || 'Fallo al consultar la base de datos PostgreSQL.'}`,
+    });
+  }
   if (!project) {
     return res.status(404).json({
       success: false,
@@ -573,7 +599,13 @@ apiRouter.post('/projects', async (req: Request, res: Response) => {
     collaborationHistory: [initAudit],
   };
 
-  await serverStorage.saveProject(newProject);
+  const saveResult = await serverStorage.saveProject(newProject);
+  if (!saveResult.success) {
+    return res.status(500).json({
+      success: false,
+      error: saveResult.error || 'Error al persistir el proyecto en la base de datos PostgreSQL.',
+    });
+  }
 
   return res.status(201).json({
     success: true,
@@ -712,7 +744,13 @@ apiRouter.put('/projects/:id', async (req: Request, res: Response) => {
     collaborationHistory: [auditRecord, ...(existing.collaborationHistory || [])],
   };
 
-  await serverStorage.saveProject(mergedProject);
+  const saveResult = await serverStorage.saveProject(mergedProject);
+  if (!saveResult.success) {
+    return res.status(500).json({
+      success: false,
+      error: saveResult.error || 'Error al persistir la actualización en la base de datos PostgreSQL.',
+    });
+  }
 
   return res.json({
     success: true,
@@ -784,7 +822,13 @@ apiRouter.post('/projects/:id/reopen', async (req: Request, res: Response) => {
     collaborationHistory: [reopenAudit, ...(existing.collaborationHistory || [])],
   };
 
-  await serverStorage.saveProject(reopenedProject);
+  const saveResult = await serverStorage.saveProject(reopenedProject);
+  if (!saveResult.success) {
+    return res.status(500).json({
+      success: false,
+      error: saveResult.error || 'Error al guardar la reapertura en la base de datos PostgreSQL.',
+    });
+  }
 
   return res.json({
     success: true,
