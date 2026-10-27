@@ -1,4 +1,4 @@
-import app from '../src/serverApp';
+import app from './_serverApp.bundle.js';
 
 /**
  * Vercel Serverless Function entry point

@@ -12783,7 +12783,7 @@
     "programName": "Tecnólogo en Gestión Empresarial",
     "centerName": "Centro de Gestión y Desarrollo Agroindustrial",
     "regional": "Regional Valle del Cauca",
-    "lastUpdated": "2026-10-22T19:35:09.686Z",
+    "lastUpdated": "2026-10-27T18:34:45.453Z",
     "currentStep": 3,
     "isMatricesValidated": true,
     "matricesValidatedAt": "2026-10-08T09:30:00.000Z",
@@ -14922,9 +14922,24 @@
       "productObservation": "El GAES 3 presenta una evidencia de producto de altísima calidad. Las matrices estratégicas de la Guía 16 no son meros cuadros teóricos, sino que reflejan el modelo de negocio de AgroLácteos del Valle. El Balanced Scorecard articula metas financieras y de operaciones con sustento numérico real y se articula integralmente con las 7 competencias organizacionales SENA.",
       "performanceObservation": "En la sustentación se evidencia cohesión de equipo y dominio de los conceptos de evaluación estratégica. Cada aprendiz sustentó su área de competencia con solvencia frente a los 7 Resultados de Aprendizaje. Se recomienda continuar con este nivel de compromiso hacia la sustentación de la fase de Evaluación del proyecto formativo."
     },
-    "version": 6,
+    "version": 7,
     "isLocked": false,
     "collaborationHistory": [
+      {
+        "id": "audit-2bb92c929621",
+        "timestamp": "2026-10-27T18:34:45.453Z",
+        "userId": "app-1",
+        "userName": "Valentina Restrepo Henao",
+        "userEmail": "vrestrepo@soy.sena.edu.co",
+        "gaesNumber": 3,
+        "fichaNumber": "2687410",
+        "phase": 1,
+        "component": "Empresa",
+        "operationType": "MODIFICAR",
+        "previousVersion": "6",
+        "newVersion": "7",
+        "description": "Ajuste de razón social oficial"
+      },
       {
         "id": "audit-005347d8690f",
         "timestamp": "2026-10-22T19:35:09.686Z",
@@ -15023,7 +15038,7 @@
     "programName": "Tecnólogo en Gestión Empresarial",
     "centerName": "Centro de Gestión y Desarrollo Agroindustrial",
     "regional": "Regional Valle del Cauca",
-    "lastUpdated": "2026-10-22T19:35:09.862Z",
+    "lastUpdated": "2026-10-27T18:34:45.676Z",
     "currentStep": 3,
     "isMatricesValidated": true,
     "matricesValidatedAt": "2026-10-09T12:00:00.000Z",
@@ -17056,9 +17071,39 @@
       "finalJudgment": "APROBADO",
       "instructorName": "Instructor SENA"
     },
-    "version": 7,
+    "version": 9,
     "isLocked": false,
     "collaborationHistory": [
+      {
+        "id": "audit-aba8b9e30c6e",
+        "timestamp": "2026-10-27T18:34:45.676Z",
+        "userId": "inst-db71cc77900a",
+        "userName": "Instructor Principal SENA",
+        "userEmail": "instructor.lider@sena.edu.co",
+        "gaesNumber": 4,
+        "fichaNumber": "2687410",
+        "phase": 6,
+        "component": "Reapertura de Proyecto Evaluado",
+        "operationType": "REAPERTURA",
+        "previousVersion": "8",
+        "newVersion": "9",
+        "description": "Reapertura formativa autorizada por Instructor Principal SENA. Motivo: Plan de Mejoramiento Formativo concertado bajo Reglamento del Aprendiz SENA para reajustar matriz MEFI y objetivos BSC."
+      },
+      {
+        "id": "audit-379246bb677f",
+        "timestamp": "2026-10-27T18:34:45.561Z",
+        "userId": "inst-db71cc77900a",
+        "userName": "Instructor Principal SENA",
+        "userEmail": "instructor.lider@sena.edu.co",
+        "gaesNumber": 4,
+        "fichaNumber": "2687410",
+        "phase": 6,
+        "component": "Evaluación",
+        "operationType": "EVALUAR",
+        "previousVersion": "7",
+        "newVersion": "8",
+        "description": "Evaluación definitiva Guía 16"
+      },
       {
         "id": "audit-395653e1621f",
         "timestamp": "2026-10-22T19:35:09.862Z",
@@ -17164,7 +17209,7 @@
         "description": "Constitución formal del GAES 4 para la empresa LogiPack Soluciones S.A.S.."
       }
     ],
-    "reopenedAt": "2026-10-22T19:35:09.862Z",
+    "reopenedAt": "2026-10-27T18:34:45.676Z",
     "reopenedBy": "Instructor Principal SENA",
     "reopenReason": "Plan de Mejoramiento Formativo concertado bajo Reglamento del Aprendiz SENA para reajustar matriz MEFI y objetivos BSC."
   },

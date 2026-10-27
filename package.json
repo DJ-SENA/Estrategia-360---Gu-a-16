@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build:server": "esbuild src/serverApp.ts --bundle --platform=node --format=esm --external:pg-native --external:pg --external:@google/genai --outfile=api/_serverApp.bundle.js",
+    "build": "vite build && npm run build:server",
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",

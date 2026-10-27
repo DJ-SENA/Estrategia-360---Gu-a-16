@@ -1,8 +1,13 @@
 {
   "version": 2,
   "framework": "vite",
-  "buildCommand": "vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "api/_serverApp.bundle.js"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
