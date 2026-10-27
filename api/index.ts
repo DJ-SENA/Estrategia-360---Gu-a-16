@@ -1,4 +1,8 @@
-import app from './_serverApp.bundle.js';
+// @ts-ignore
+import serverBundle from './_serverApp.bundle.cjs';
+
+// CommonJS module interop
+const app = (serverBundle && (serverBundle.default || serverBundle)) as any;
 
 /**
  * Vercel Serverless Function entry point
@@ -7,3 +11,4 @@ import app from './_serverApp.bundle.js';
 export default function handler(req: any, res: any) {
   return app(req, res);
 }
+

@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "functions": {
     "api/index.ts": {
-      "includeFiles": "api/_serverApp.bundle.js"
+      "includeFiles": "api/_serverApp.bundle.cjs"
     }
   },
   "rewrites": [

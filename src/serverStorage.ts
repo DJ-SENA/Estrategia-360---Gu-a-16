@@ -8,9 +8,7 @@ import { INITIAL_COHORT_PROJECTS } from './data/cohortMockProjects';
 
 const { Pool } = pg;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
+const ROOT_DIR = typeof __dirname !== 'undefined' ? path.resolve(__dirname, '..') : process.cwd();
 const DATA_DIR = path.resolve(ROOT_DIR, 'data');
 const DB_FILE = path.resolve(DATA_DIR, 'projects-db.json');
 const BACKUP_FILE = path.resolve(DATA_DIR, 'projects-db.json.bak');
