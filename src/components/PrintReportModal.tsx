@@ -5,7 +5,9 @@ import {
   Download, 
   FileCheck, 
   Loader2, 
-  FileSpreadsheet
+  FileSpreadsheet,
+  AlertTriangle,
+  CheckCircle2
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -38,6 +40,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
 
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Status computation for preliminary draft vs definitive evaluation
   const isPendingEvaluation =
@@ -49,73 +53,180 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
   const instructorName = project.instructorEvaluation?.instructorName || 'Instructor Técnico Evaluador';
 
   const handlePrint = () => {
-    window.print();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      window.print();
+    } catch (err: any) {
+      console.error('Error al invocar impresión nativa:', err);
+      setErrorMessage(
+        'El navegador impidió abrir el cuadro de diálogo de impresión. Puede utilizar el botón "Descargar PDF para Firma Física" para obtener el archivo oficial directamente.'
+      );
+    }
   };
 
   const handleGeneratePDF = async () => {
     const reportElement = document.getElementById('sena-printable-report');
-    if (!reportElement) return;
+    if (!reportElement) {
+      setErrorMessage('No se encontró el contenedor del acta oficial en el documento.');
+      return;
+    }
 
     setIsGeneratingPDF(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
     try {
+      // Create canvas from printable report with robust scaling and layout
       const canvas = await html2canvas(reportElement, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: -window.scrollY,
         windowWidth: 1024,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('sena-printable-report');
+          if (el) {
+            el.style.width = '794px';
+            el.style.maxWidth = '794px';
+            el.style.padding = '16px';
+            el.style.boxSizing = 'border-box';
+            el.style.backgroundColor = '#ffffff';
+            el.style.overflow = 'visible';
+          }
+          const noPrints = clonedDoc.querySelectorAll('.no-print');
+          noPrints.forEach((np) => np.remove());
+        },
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error('El renderizador gráfico generó un lienzo sin contenido.');
+      }
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
+        compress: true,
       });
 
-      const imgWidth = 210; // A4 mm
-      const pageHeight = 297; // A4 mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const pdfWidth = 210; // A4 mm
+      const pdfHeight = 297; // A4 mm
+      const margin = 8; // 8 mm margin on sides
+      const printWidth = pdfWidth - margin * 2; // 194 mm
+      const printHeight = pdfHeight - margin * 2; // 281 mm
 
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Canvas pixels per mm
+      const pxPerMm = canvas.width / printWidth;
+      const pageHeightPx = Math.floor(printHeight * pxPerMm);
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      let currentYPx = 0;
+      let pageNumber = 1;
+      const totalPages = Math.ceil(canvas.height / pageHeightPx) || 1;
+
+      while (currentYPx < canvas.height) {
+        if (pageNumber > 1) {
+          pdf.addPage();
+        }
+
+        const chunkHeightPx = Math.min(pageHeightPx, canvas.height - currentYPx);
+
+        // Sub-canvas for this page slice
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = pageHeightPx;
+        const pageCtx = pageCanvas.getContext('2d');
+        if (pageCtx) {
+          pageCtx.fillStyle = '#ffffff';
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          pageCtx.drawImage(
+            canvas,
+            0, currentYPx, canvas.width, chunkHeightPx,
+            0, 0, canvas.width, chunkHeightPx
+          );
+        }
+
+        const chunkImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+        const chunkHeightMm = (chunkHeightPx / canvas.width) * printWidth;
+
+        pdf.addImage(chunkImgData, 'JPEG', margin, margin, printWidth, chunkHeightMm);
+
+        // Page numbering & institutional footer
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text(
+          `SENA Guía 16 • Ficha ${project.fichaNumber || '2687410'} • GAES ${project.gaesNumber} • Página ${pageNumber} de ${totalPages} • Documento Oficial para Firma Física Manuscrita`,
+          pdfWidth / 2,
+          pdfHeight - 4,
+          { align: 'center' }
+        );
+
+        currentYPx += pageHeightPx;
+        pageNumber++;
       }
 
       const cleanCompanyName = (project.company?.name || 'Empresa').replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `Acta_Final_Guia16_GAES_${project.gaesNumber}_${cleanCompanyName}.pdf`;
-      pdf.save(filename);
-    } catch (err) {
+
+      try {
+        pdf.save(filename);
+      } catch (saveErr) {
+        // Direct Blob URL fallback for restricted contexts
+        const blob = pdf.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          if (document.body.contains(a)) {
+            document.body.removeChild(a);
+          }
+          URL.revokeObjectURL(blobUrl);
+        }, 300);
+      }
+
+      setSuccessMessage(`Documento PDF generado y descargado exitosamente (${filename}).`);
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err: any) {
       console.error('Error generando PDF:', err);
-      window.print();
+      setErrorMessage(
+        `No fue posible generar el archivo PDF automáticamente: ${err?.message || 'Error de renderizado gráfico'}. Puede utilizar el botón "Imprimir" del navegador para imprimir directamente o seleccionar "Guardar como PDF".`
+      );
     } finally {
       setIsGeneratingPDF(false);
     }
   };
 
   const handleExportExcel = () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
     setIsExportingExcel(true);
     try {
-      exportFinalReportAndMatricesExcel(project);
-    } catch (err) {
+      const res = exportFinalReportAndMatricesExcel(project);
+      setSuccessMessage(
+        `Libro Excel (.xlsx) exportado exitosamente (${res?.fileName || 'Reporte_Guia16.xlsx'}).`
+      );
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err: any) {
       console.error('Error exportando Excel:', err);
+      setErrorMessage(
+        `Error al exportar el archivo Excel: ${err?.message || 'Error desconocido al procesar datos del GAES'}.`
+      );
     } finally {
-      setTimeout(() => setIsExportingExcel(false), 600);
+      setIsExportingExcel(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white text-slate-900 rounded-2xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl relative my-8 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto sena-print-modal-backdrop">
+      <div className="bg-white text-slate-900 rounded-2xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl relative my-8 max-h-[90vh] overflow-y-auto sena-print-modal-container">
         {/* Floating actions & Toolbar (hidden on print) */}
-        <div className="no-print sticky top-0 right-0 z-20 bg-white/95 backdrop-blur pb-4 mb-6 border-b border-slate-200 space-y-3">
+        <div className="no-print sticky top-0 right-0 z-20 bg-white/95 backdrop-blur pb-4 mb-4 border-b border-slate-200 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="font-bold text-sm text-slate-800">
@@ -150,7 +261,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 type="button"
                 onClick={handleGeneratePDF}
                 disabled={isGeneratingPDF}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all disabled:opacity-50"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isGeneratingPDF ? (
                   <>
@@ -170,7 +281,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 type="button"
                 onClick={handleExportExcel}
                 disabled={isExportingExcel}
-                className="bg-teal-700 hover:bg-teal-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all disabled:opacity-50"
+                className="bg-teal-700 hover:bg-teal-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all disabled:opacity-50 cursor-pointer"
                 title="Exportar informe consolidado y todas las matrices estratégicas a formato Excel (.xlsx)"
               >
                 {isExportingExcel ? (
@@ -190,7 +301,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               <button
                 type="button"
                 onClick={handlePrint}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition-colors"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition-colors cursor-pointer"
                 title="Impresión directa o guardar vía diálogo nativo"
               >
                 <Printer className="w-4 h-4 text-slate-600" />
@@ -201,18 +312,57 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-500 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                className="text-slate-500 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
+
+          {/* User Feedback Alert Banners */}
+          {errorMessage && (
+            <div className="bg-rose-50 border border-rose-300 text-rose-800 p-3 rounded-xl text-xs flex items-start justify-between gap-3 shadow-sm animate-in fade-in">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="block font-bold">Aviso de Operación</strong>
+                  <span className="leading-relaxed">{errorMessage}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setErrorMessage(null)}
+                className="text-rose-600 hover:text-rose-900 font-bold p-1 cursor-pointer"
+                title="Cerrar aviso"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-3 rounded-xl text-xs flex items-center justify-between gap-3 shadow-sm animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-medium">{successMessage}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSuccessMessage(null)}
+                className="text-emerald-700 hover:text-emerald-950 font-bold p-1 cursor-pointer"
+                title="Cerrar aviso"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* PRINTABLE CONTENT WITH ID FOR HTML2CANVAS */}
         <div id="sena-printable-report" className="space-y-6 text-xs text-slate-800 font-sans print:text-black bg-white p-2">
           {/* Official Institutional Header */}
           <div className="border-b-2 border-slate-900 pb-4 text-center space-y-1">
+
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 p-1 rounded-lg border border-emerald-600/30 flex items-center justify-center bg-white">
@@ -288,13 +438,13 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
           </div>
 
           {/* Section 1: GAES and Company Details */}
-          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 sena-section-box avoid-page-break">
             <div>
               <span className="font-bold text-[11px] text-emerald-800 uppercase block mb-1">
                 1. Identificación del GAES No. {project.gaesNumber}
               </span>
               <ul className="space-y-1 text-[11px]">
-                {project.apprentices.map((app) => (
+                {(project.apprentices || []).map((app) => (
                   <li key={app.id}>
                     • <strong>{app.name}</strong> ({app.role}) - Doc: {app.document}
                   </li>
@@ -306,15 +456,15 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               <span className="font-bold text-[11px] text-emerald-800 uppercase block mb-1">
                 2. Empresa Proyecto Formativo
               </span>
-              <p className="text-[11px]"><strong>Razón Social:</strong> {project.company.name}</p>
-              <p className="text-[11px]"><strong>NIT:</strong> {project.company.nit} | <strong>Ciudad:</strong> {project.company.city}</p>
-              <p className="text-[11px]"><strong>Sector:</strong> {project.company.sector} ({project.company.ciiuCode})</p>
-              <p className="text-[11px]"><strong>Producto Estrella:</strong> {project.company.mainProduct}</p>
+              <p className="text-[11px]"><strong>Razón Social:</strong> {project.company?.name || 'Empresa Proyecto'}</p>
+              <p className="text-[11px]"><strong>NIT:</strong> {project.company?.nit || 'No Registrado'} | <strong>Ciudad:</strong> {project.company?.city || 'No Registrada'}</p>
+              <p className="text-[11px]"><strong>Sector:</strong> {project.company?.sector || 'No Registrado'} ({project.company?.ciiuCode || ''})</p>
+              <p className="text-[11px]"><strong>Producto Estrella:</strong> {project.company?.mainProduct || 'No Registrado'}</p>
             </div>
           </div>
 
           {/* Section 2: Validación de Entregables de Guías Anteriores */}
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 sena-section-box avoid-page-break">
             <div className="flex items-center justify-between">
               <span className="font-bold text-[11px] text-emerald-800 uppercase">
                 3. Validación de Insumos & Entregables de Guías Previas (Eje Articulador)
@@ -348,7 +498,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
           </div>
 
           {/* Section 3: Synthetic Matrices Summary */}
-          <div>
+          <div className="sena-section-box avoid-page-break">
             <span className="font-bold text-xs text-slate-900 uppercase block mb-2 border-b border-slate-300 pb-1">
               4. Resumen Cuantitativo de Matrices Estratégicas (Guía 16)
             </span>
@@ -365,17 +515,17 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
               <div className="p-2.5 rounded-lg border border-slate-200 bg-slate-50">
                 <span className="font-bold block text-slate-600">Matriz PEYEA</span>
-                <strong className="text-sm text-purple-700 font-mono">{project.peyea.quadrant}</strong>
+                <strong className="text-sm text-purple-700 font-mono">{project.peyea?.quadrant || 'Agresivo'}</strong>
                 <span className="text-[10px] text-slate-500 block">
-                  Vector ({project.peyea.coordinateX.toFixed(2)}, {project.peyea.coordinateY.toFixed(2)})
+                  Vector ({project.peyea?.coordinateX != null ? project.peyea.coordinateX.toFixed(2) : '0.00'}, {project.peyea?.coordinateY != null ? project.peyea.coordinateY.toFixed(2) : '0.00'})
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Cuadro de Mando Integral */}
+
           {/* Section 5: Cuadro de Mando Integral */}
-          <div>
+          <div className="sena-section-box avoid-page-break">
             <span className="font-bold text-xs text-slate-900 uppercase block mb-2 border-b border-slate-300 pb-1">
               5. Cuadro de Mando Integral (Balanced Scorecard) & Fichas Técnicas de Indicadores
             </span>
@@ -391,8 +541,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {project.bscObjectives.map((obj) => {
-                  const kpi = project.indicators?.find(
+                {(project.bscObjectives || []).map((obj) => {
+                  const kpi = (project.indicators || []).find(
                     (ind) => ind.associatedObjectiveId === obj.id || ind.code === obj.kpiCode
                   );
                   return (
@@ -430,7 +580,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[9px]">
                   {project.indicators.map((ind) => (
-                    <div key={ind.id} className="border border-slate-200 bg-white p-2 rounded-lg space-y-1 shadow-sm">
+                    <div key={ind.id} className="border border-slate-200 bg-white p-2 rounded-lg space-y-1 shadow-sm sena-indicator-card avoid-page-break">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-mono font-bold text-purple-900 bg-purple-100 px-1.5 py-0.2 rounded">
@@ -456,8 +606,9 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
             )}
           </div>
 
+
           {/* Section 6: Mapeo de Resultados de Aprendizaje vs Actividades y Entregables por Paso */}
-          <div className="space-y-4 border border-slate-300 rounded-xl p-4 bg-slate-50/70">
+          <div className="space-y-4 border border-slate-300 rounded-xl p-4 bg-slate-50/70 sena-section-box avoid-page-break">
             <div className="flex items-center justify-between border-b border-slate-300 pb-2">
               <div>
                 <span className="font-bold text-xs text-slate-900 uppercase block">
@@ -469,7 +620,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-md font-mono">
-                  Cumplimiento: {compReport.overallPercentage}% ({compReport.competenciesCompletedCount}/7 Completadas)
+                  Cumplimiento: {compReport?.overallPercentage ?? 0}% ({compReport?.competenciesCompletedCount ?? 0}/7 Completadas)
                 </span>
               </div>
             </div>
@@ -480,8 +631,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 A. Matriz Curricular de Competencias, Actividades y Entregables del Aprendiz:
               </span>
               <div className="space-y-2.5">
-                {compReport.details.map((comp) => (
-                  <div key={comp.codigo} className="border border-slate-200 bg-white p-3 rounded-lg space-y-2 text-[10px] shadow-sm">
+                {(compReport?.details || []).map((comp) => (
+                  <div key={comp.codigo} className="border border-slate-200 bg-white p-3 rounded-lg space-y-2 text-[10px] shadow-sm sena-criteria-card avoid-page-break">
                     <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-1.5 flex-wrap">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono font-bold text-white bg-indigo-900 px-2 py-0.5 rounded text-[9px]">
@@ -600,7 +751,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
           </div>
 
           {/* Section 7: Juicio Evaluativo Oficial del Instructor */}
-          <div className="border-2 border-slate-800 p-4 rounded-xl space-y-3 bg-slate-50">
+          <div className="border-2 border-slate-800 p-4 rounded-xl space-y-3 bg-slate-50 sena-section-box avoid-page-break">
             <div className="flex items-center justify-between border-b border-slate-300 pb-2">
               <span className="font-bold text-xs uppercase text-slate-900">
                 7. Dictamen y Juicio Evaluativo Oficial del Instructor Técnico
@@ -623,12 +774,12 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 <p>
                   <strong>Calificación Evidencias de Producto:</strong>{' '}
                   <span className="font-mono font-bold text-sm">
-                    {project.instructorEvaluation.productEvidenceScore}/100
+                    {project.instructorEvaluation?.productEvidenceScore ?? 0}/100
                   </span>
                 </p>
                 <p className="mt-1 text-slate-700">
                   <strong>Observación de Producto:</strong>{' '}
-                  {project.instructorEvaluation.productObservation}
+                  {project.instructorEvaluation?.productObservation || 'Pendiente de evaluación técnica por el instructor.'}
                 </p>
               </div>
 
@@ -636,12 +787,12 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 <p>
                   <strong>Calificación Evidencias de Desempeño:</strong>{' '}
                   <span className="font-mono font-bold text-sm">
-                    {project.instructorEvaluation.performanceEvidenceScore}/100
+                    {project.instructorEvaluation?.performanceEvidenceScore ?? 0}/100
                   </span>
                 </p>
                 <p className="mt-1 text-slate-700">
                   <strong>Observación de Desempeño:</strong>{' '}
-                  {project.instructorEvaluation.performanceObservation}
+                  {project.instructorEvaluation?.performanceObservation || 'Pendiente de sustentación y evaluación de desempeño.'}
                 </p>
               </div>
             </div>
@@ -658,8 +809,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                {project.instructorEvaluation.criteria.map((c) => (
-                  <div key={c.id} className="border border-slate-200 bg-white p-2.5 rounded-lg space-y-1.5 text-[10px]">
+                {(project.instructorEvaluation?.criteria || []).map((c) => (
+                  <div key={c.id} className="border border-slate-200 bg-white p-2.5 rounded-lg space-y-1.5 text-[10px] sena-criteria-card avoid-page-break">
                     <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-mono font-bold text-indigo-950 bg-indigo-50 border border-indigo-200 px-1.5 py-0.2 rounded text-[9px]">
@@ -721,8 +872,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
             </div>
 
-            {/* Corrección N.º 4: Formalización Física del Informe Final (Sin firmas digitales automáticas) */}
-            <div className="pt-6 mt-4 border-t-2 border-slate-300 space-y-4">
+            {/* Corrección N.º 4: Formalización Física del Informe Final (Exclusivo Firma Física del Instructor SENA) */}
+            <div className="pt-6 mt-4 border-t-2 border-slate-300 space-y-4 avoid-page-break">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <div className="flex items-center gap-2">
                   <FileCheck className="w-4 h-4 text-slate-700" />
@@ -743,7 +894,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
 
               <div className="max-w-xl mx-auto text-[10px] pt-2 w-full">
                 {/* Bloque exclusivo de formalización y firma física del instructor SENA */}
-                <div className="border border-slate-300 rounded-xl p-5 bg-white space-y-3 shadow-sm">
+                <div className="border border-slate-300 rounded-xl p-5 bg-white space-y-3 shadow-sm sena-signature-block avoid-page-break">
                   <div className="text-[11px] font-bold text-slate-900 uppercase border-b border-slate-200 pb-1 text-center">
                     Instructor Técnico Evaluador SENA
                   </div>
@@ -771,7 +922,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
 
               {/* Sello de Radicación Institucional */}
-              <div className="p-3 bg-slate-100 border border-slate-300 rounded-xl flex items-center justify-between text-[9px] text-slate-700 flex-wrap gap-2">
+              <div className="p-3 bg-slate-100 border border-slate-300 rounded-xl flex items-center justify-between text-[9px] text-slate-700 flex-wrap gap-2 avoid-page-break">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-emerald-800 text-white font-black flex items-center justify-center text-xs shrink-0 shadow-sm">
                     SENA
@@ -781,7 +932,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                       SISTEMA NACIONAL DE FORMACIÓN PARA EL TRABAJO - SERVICIO NACIONAL DE APRENDIZAJE
                     </span>
                     <span className="text-slate-600 block">
-                      Acta formal de entrega y rúbrica integral de competencias Guía 16 • Ficha {project.fichaNumber} • {project.company.name}
+                      Acta formal de entrega y rúbrica integral de competencias Guía 16 • Ficha {project.fichaNumber} • {project.company?.name || 'Empresa Proyecto'}
                     </span>
                   </div>
                 </div>
@@ -792,6 +943,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>

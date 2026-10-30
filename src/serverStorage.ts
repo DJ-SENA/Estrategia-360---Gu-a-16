@@ -662,6 +662,13 @@ export const serverStorage = {
     }
 
     // Local file fallback ONLY in non-Vercel environment
+    const existingIdx = memoryProjects.findIndex((p) => p.id === project.id);
+    if (existingIdx !== -1) {
+      memoryProjects[existingIdx] = project;
+    } else {
+      memoryProjects.unshift(project);
+    }
+
     const ok = atomicSaveToFile(memoryProjects);
     return { success: ok, error: ok ? undefined : 'Error al escribir archivo JSON local.' };
   },

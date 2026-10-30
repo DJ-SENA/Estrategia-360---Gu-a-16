@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   mockProjectAgroLacteos, 
   createBlankGAESProject 
@@ -77,33 +77,64 @@ export default function App() {
   const [isConfirmResetOpen, setIsConfirmResetOpen] = useState<boolean>(false);
   const [lastSavedTime, setLastSavedTime] = useState<string>('Ahora');
   const [notification, setNotification] = useState<string | null>(null);
+  const [isLoadingProjects, setIsLoadingProjects] = useState<boolean>(false);
+  const [projectsLoadError, setProjectsLoadError] = useState<string | null>(null);
 
-  // Load centralized projects from server
-  useEffect(() => {
-    if (!currentUser?.token) return;
+  const projectsRef = useRef(projects);
+  projectsRef.current = projects;
+  const updateQueueRef = useRef<Record<string, Promise<any>>>({});
 
-    fetch('/api/projects', {
-      headers: {
-        Authorization: `Bearer ${currentUser.token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Error al cargar proyectos del servidor');
-        return res.json();
-      })
-      .then((data) => {
-        if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
+  // Centralized loader of authorized projects from server
+  const fetchAuthorizedProjects = async (token: string, silent = false) => {
+    if (!silent) setIsLoadingProjects(true);
+    setProjectsLoadError(null);
+
+    try {
+      const res = await fetch('/api/projects', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Error HTTP ${res.status} al consultar proyectos`);
+      }
+
+      const data = await res.json();
+      if (data.success && Array.isArray(data.projects)) {
+        if (data.projects.length > 0) {
           setProjects(data.projects);
-          if (currentUser.role === 'APRENDIZ' && currentUser.gaesNumber) {
+
+          // For apprentices, lock to their assigned GAES
+          if (currentUser?.role === 'APRENDIZ' && currentUser?.gaesNumber) {
             const userProj = data.projects.find((p: GAESProject) => p.gaesNumber === currentUser.gaesNumber);
             if (userProj) setCurrentProjectId(userProj.id);
+          } else {
+            // For instructors, ensure currentProjectId is valid
+            setCurrentProjectId((prevId) => {
+              const exists = data.projects.some((p: GAESProject) => p.id === prevId);
+              return exists ? prevId : data.projects[0].id;
+            });
           }
+        } else {
+          // Zero projects currently in database
+          setProjects([]);
         }
-      })
-      .catch((err) => {
-        console.warn('Utilizando caché local de proyectos:', err);
-      });
-  }, [currentUser]);
+      }
+    } catch (err: any) {
+      console.warn('Error al cargar proyectos autorizados:', err);
+      setProjectsLoadError(err.message || 'Error de conexión con el servidor al consultar los proyectos.');
+    } finally {
+      if (!silent) setIsLoadingProjects(false);
+    }
+  };
+
+  // Load centralized projects from server when user token is present
+  useEffect(() => {
+    if (!currentUser?.token) return;
+    fetchAuthorizedProjects(currentUser.token);
+  }, [currentUser?.token]);
 
   // Sync projects with localStorage as secondary backup
   useEffect(() => {
@@ -206,25 +237,7 @@ export default function App() {
 
     // Refresh projects from server with fresh token
     if (user.token) {
-      fetch('/api/projects', {
-        headers: { Authorization: `Bearer ${user.token}` },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error('Error al recargar');
-          return res.json();
-        })
-        .then((data) => {
-          if (data.success && Array.isArray(data.projects)) {
-            setProjects(data.projects);
-            if (user.role === 'APRENDIZ' && user.gaesNumber) {
-              const target = data.projects.find((p: GAESProject) => p.gaesNumber === user.gaesNumber);
-              if (target) {
-                setCurrentProjectId(target.id);
-              }
-            }
-          }
-        })
-        .catch(() => {});
+      fetchAuthorizedProjects(user.token);
     }
   };
 
@@ -264,7 +277,7 @@ export default function App() {
     changeSummary?: string,
     phaseIntervened?: number,
     componentIntervened?: string
-  ) => {
+  ): Promise<{ success: boolean; error?: string; project?: GAESProject }> => {
     // If apprentice attempts to alter instructor evaluation, block and discard
     if (currentUser?.role === 'APRENDIZ' && 'instructorEvaluation' in updated) {
       const { instructorEvaluation: _, ...allowedUpdates } = updated;
@@ -272,56 +285,88 @@ export default function App() {
       showNotification('Acceso denegado: Los aprendices no tienen autorización para modificar la evaluación del instructor.');
     }
 
-    const currentProj = projects.find((p) => p.id === currentProjectId) || currentProject;
-    const clientVersion = currentProj.version || 1;
+    const targetId = currentProjectId;
+    const prevQueue = updateQueueRef.current[targetId] || Promise.resolve();
 
-    // Optimistic local update
-    const optimisticProj = {
-      ...currentProj,
-      ...updated,
-      lastUpdated: new Date().toISOString(),
-    };
-    setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? optimisticProj : p)));
+    const currentTask = (async () => {
+      // Await any earlier pending update for this project to finish, preventing duplicate concurrent version tokens
+      await prevQueue.catch(() => {});
 
-    if (!currentUser?.token) return;
+      const currentProj = projectsRef.current.find((p) => p.id === targetId) || currentProject;
+      const clientVersion = currentProj.version || 1;
 
-    try {
-      const response = await fetch(`/api/projects/${currentProj.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-        body: JSON.stringify({
-          updatedProject: updated,
-          clientVersion,
-          changeSummary,
-          phaseIntervened: phaseIntervened || currentStep,
-          componentIntervened,
-        }),
-      });
+      // Optimistic local update
+      const optimisticProj = {
+        ...currentProj,
+        ...updated,
+        lastUpdated: new Date().toISOString(),
+      };
+      setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? optimisticProj : p)));
 
-      const resData = await response.json();
+      if (!currentUser?.token) {
+        return { success: true, project: optimisticProj };
+      }
 
-      if (response.status === 409) {
-        showNotification('Conflicto de concurrencia: Otro integrante del GAES modificó y guardó este proyecto recientemente.');
-        if (resData.serverProject) {
-          setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? resData.serverProject : p)));
+      try {
+        const response = await fetch(`/api/projects/${currentProj.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+          body: JSON.stringify({
+            updatedProject: updated,
+            clientVersion,
+            changeSummary,
+            phaseIntervened: phaseIntervened || currentStep,
+            componentIntervened,
+          }),
+        });
+
+        const resData = await response.json().catch(() => ({}));
+
+        if (response.status === 409) {
+          showNotification('Conflicto de concurrencia: Otro usuario guardó modificaciones recientes.');
+          // Do not discard manual edits in Step 6
+          if (resData.serverProject && currentStep !== 6) {
+            setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? resData.serverProject : p)));
+          }
+          return {
+            success: false,
+            error: resData.error || 'Conflicto de concurrencia al guardar en el servidor.',
+          };
         }
-        return;
-      }
 
-      if (response.status === 423) {
-        showNotification('Proyecto bloqueado: La evaluación definitiva ya ha sido registrada por el instructor.');
-        return;
-      }
+        if (response.status === 423) {
+          showNotification('Proyecto bloqueado: La evaluación definitiva ya ha sido registrada por el instructor.');
+          return {
+            success: false,
+            error: resData.error || 'Proyecto bloqueado: La evaluación definitiva ya fue formalizada.',
+          };
+        }
 
-      if (resData.success && resData.project) {
-        setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? resData.project : p)));
+        if (!response.ok || !resData.success) {
+          const errMsg = resData.error || `Error del servidor (Código ${response.status}).`;
+          showNotification(errMsg);
+          return { success: false, error: errMsg };
+        }
+
+        if (resData.success && resData.project) {
+          setProjects((prev) => prev.map((p) => (p.id === currentProj.id ? resData.project : p)));
+          return { success: true, project: resData.project };
+        }
+
+        return { success: false, error: 'Respuesta incompleta del servidor.' };
+      } catch (err: any) {
+        console.error('Error al sincronizar con el servidor:', err);
+        const errMsg = `Error de red al sincronizar con el servidor: ${err.message || 'Sin conexión'}`;
+        showNotification(errMsg);
+        return { success: false, error: errMsg };
       }
-    } catch (err) {
-      console.error('Error al sincronizar con el servidor:', err);
-    }
+    })();
+
+    updateQueueRef.current[targetId] = currentTask;
+    return currentTask;
   };
 
   const handleReopenProject = async (projectId: string, reason: string) => {
@@ -486,6 +531,8 @@ export default function App() {
         lastSavedTime={lastSavedTime}
         onExportJson={handleExportJson}
         onImportJson={handleImportJson}
+        isLoadingProjects={isLoadingProjects}
+        projectsLoadError={projectsLoadError}
       />
 
       {/* Step Progress Stepper (hides step 6 completely for apprentices) */}
@@ -639,6 +686,9 @@ export default function App() {
             onOpenPrintModal={() => setIsPrintModalOpen(true)}
             onPrevStep={() => setCurrentStep(5)}
             onReopenProject={handleReopenProject}
+            isLoadingProjects={isLoadingProjects}
+            projectsLoadError={projectsLoadError}
+            onRefreshProjects={() => currentUser?.token && fetchAuthorizedProjects(currentUser.token)}
           />
         )}
       </main>

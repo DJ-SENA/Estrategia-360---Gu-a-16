@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Award, 
   CheckCircle2, 
@@ -25,9 +25,10 @@ import {
   X,
   AlertCircle,
   Building2,
-  ArrowRight
+  ArrowRight,
+  RefreshCw
 } from 'lucide-react';
-import { GAESProject, InstructorEvaluation, InstructorCriteria, AuthUser, AuditContributionRecord } from '../types';
+import { GAESProject, InstructorEvaluation, InstructorCriteria, AuthUser, AuditContributionRecord, EvaluationAuditRecord } from '../types';
 import { buildInitialInstructorCriteria, SENA_COMPETENCIAS_ORGANIZACIONALES } from '../data/learningCompetencies';
 import { InstructorDashboard } from './InstructorDashboard';
 
@@ -35,11 +36,19 @@ interface Step6Props {
   project: GAESProject;
   projectsList?: GAESProject[];
   onSelectProject?: (projectId: string) => void;
-  onUpdateProject: (updated: Partial<GAESProject>) => void;
+  onUpdateProject: (
+    updated: Partial<GAESProject>,
+    changeSummary?: string,
+    phaseIntervened?: number,
+    componentIntervened?: string
+  ) => Promise<{ success: boolean; error?: string; project?: GAESProject }> | void;
   onOpenPrintModal: () => void;
   onPrevStep: () => void;
   currentUser?: AuthUser | null;
   onReopenProject?: (projectId: string, reason: string) => Promise<void> | void;
+  isLoadingProjects?: boolean;
+  projectsLoadError?: string | null;
+  onRefreshProjects?: () => void;
 }
 
 export const Step6_InstructorPanel: React.FC<Step6Props> = ({
@@ -51,8 +60,28 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
   onPrevStep,
   currentUser,
   onReopenProject,
+  isLoadingProjects,
+  projectsLoadError,
+  onRefreshProjects,
 }) => {
-  const { instructorEvaluation } = project;
+  const [localEvaluation, setLocalEvaluation] = useState<InstructorEvaluation>(project.instructorEvaluation);
+  const instructorEvaluation = localEvaluation;
+  const [isSavingDefinitive, setIsSavingDefinitive] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Synchronize when project.id changes (switching GAES) or when refreshed from server
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    setLocalEvaluation(project.instructorEvaluation);
+  }, [
+    project.id,
+    project.version,
+    project.instructorEvaluation?.lastModifiedAt,
+    project.instructorEvaluation?.isDefinitiveSaved,
+  ]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [viewMode, setViewMode] = useState<'DASHBOARD' | 'RUBRIC' | 'TRACKING'>('DASHBOARD');
   const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
@@ -103,16 +132,30 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
   }, [allAuditRecords, filterGaesTrack, filterPhaseTrack, trackingSearch]);
 
   const handleUpdateEvaluation = (updates: Partial<InstructorEvaluation>) => {
-    onUpdateProject({
-      instructorEvaluation: {
-        ...instructorEvaluation,
+    setLocalEvaluation((prev) => {
+      const nextEval = {
+        ...prev,
         ...updates,
-      },
+      };
+
+      // Debounce draft save to server (1200ms) only if not locked or definitive saved
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        if (!project.isLocked && !project.instructorEvaluation?.isDefinitiveSaved) {
+          onUpdateProject({
+            instructorEvaluation: nextEval,
+          }, 'Borrador de evaluación actualizado', 6, 'Panel de Evaluación (Fase 6)');
+        }
+      }, 1200);
+
+      return nextEval;
     });
   };
 
   const handleUpdateCriterion = (criterionId: string, updates: Partial<InstructorCriteria>) => {
-    const updatedCriteria = instructorEvaluation.criteria.map((c) =>
+    const updatedCriteria = localEvaluation.criteria.map((c) =>
       c.id === criterionId ? { ...c, ...updates } : c
     );
 
@@ -125,7 +168,7 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
         ? Math.round(
             evaluatedCriteria.reduce((acc, c) => acc + (c.score * c.weight), 0) / (totalWeightEvaluated || 1)
           )
-        : 0;
+        : localEvaluation.productEvidenceScore;
 
     handleUpdateEvaluation({
       criteria: updatedCriteria,
@@ -136,7 +179,7 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
   const handleLoadOfficialCompetencies = () => {
     // Preserve any existing evaluations already registered by the instructor (scores, feedback, status)
     const existingCriteriaMap = new Map<string, InstructorCriteria>();
-    (instructorEvaluation.criteria || []).forEach((c) => {
+    (localEvaluation.criteria || []).forEach((c) => {
       if (c.rapCode) existingCriteriaMap.set(c.rapCode, c);
       if (c.id) existingCriteriaMap.set(c.id, c);
     });
@@ -172,19 +215,24 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
         ? Math.round(
             evaluatedCriteria.reduce((acc, c) => acc + (c.score * c.weight), 0) / (totalWeightEvaluated || 1)
           )
-        : instructorEvaluation.productEvidenceScore > 0
-        ? instructorEvaluation.productEvidenceScore
+        : localEvaluation.productEvidenceScore > 0
+        ? localEvaluation.productEvidenceScore
         : 0;
 
     handleUpdateEvaluation({
       criteria: mergedCriteria,
       productEvidenceScore: calculatedProductScore,
       // CRITICAL: Preserve existing performanceEvidenceScore, NEVER set default 92
-      performanceEvidenceScore: instructorEvaluation.performanceEvidenceScore || 0,
+      performanceEvidenceScore: localEvaluation.performanceEvidenceScore || 0,
     });
   };
 
   const handleSuggestAIEvaluation = async () => {
+    if (project.isLocked || localEvaluation.isDefinitiveSaved) {
+      setAiErrorMessage('La evaluación definitiva ya se encuentra registrada y formalizada. Para solicitar o aplicar nuevas sugerencias de IA, el instructor debe habilitar modificación primero.');
+      return;
+    }
+
     setIsGeneratingAI(true);
     setAiErrorMessage(null);
     setAiSuggestion(null);
@@ -248,50 +296,94 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
   };
 
   const handleApplyAiSuggestion = () => {
+    if (project.isLocked || localEvaluation.isDefinitiveSaved) {
+      setAiErrorMessage('No se puede aplicar una propuesta de IA sobre una evaluación definitiva ya formalizada. Debe habilitar modificación primero.');
+      return;
+    }
     if (!aiSuggestion) return;
     handleUpdateEvaluation({
-      productObservation: aiSuggestion.observacionProducto || instructorEvaluation.productObservation,
-      performanceObservation: aiSuggestion.observacionDesempeno || instructorEvaluation.performanceObservation,
+      productObservation: aiSuggestion.observacionProducto || localEvaluation.productObservation,
+      performanceObservation: aiSuggestion.observacionDesempeno || localEvaluation.performanceObservation,
     });
     setAiSuggestion(null);
   };
 
-  const handleSaveDefinitiveEvaluation = () => {
-    if (!instructorEvaluation.instructorName.trim()) {
+  const handleSaveDefinitiveEvaluation = async () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    if (!localEvaluation.instructorName.trim()) {
       setAiErrorMessage('Debe ingresar el nombre del instructor evaluador antes de guardar la evaluación definitiva.');
       return;
     }
-    if (instructorEvaluation.finalJudgment === 'PENDIENTE DE EVALUACIÓN') {
+    if (localEvaluation.finalJudgment === 'PENDIENTE DE EVALUACIÓN') {
       setAiErrorMessage('Debe seleccionar un dictamen oficial (APROBADO o NO APROBADO) para registrar la evaluación definitiva.');
       return;
     }
 
+    setIsSavingDefinitive(true);
+    setAiErrorMessage(null);
+
     const now = new Date().toISOString();
-    const auditRecord = {
+    const auditRecord: EvaluationAuditRecord = {
       id: `audit-${Date.now()}`,
       timestamp: now,
       action: 'REGISTRO_EVALUACION_DEFINITIVA',
-      evaluatedBy: currentUser?.name || instructorEvaluation.instructorName || 'Instructor Técnico',
-      instructorDocument: instructorEvaluation.instructorDocument,
-      judgment: instructorEvaluation.finalJudgment,
-      productScore: instructorEvaluation.productEvidenceScore,
-      performanceScore: instructorEvaluation.performanceEvidenceScore,
+      evaluatedBy: currentUser?.name || localEvaluation.instructorName || 'Instructor Técnico',
+      instructorDocument: localEvaluation.instructorDocument,
+      judgment: localEvaluation.finalJudgment,
+      productScore: localEvaluation.productEvidenceScore,
+      performanceScore: localEvaluation.performanceEvidenceScore,
       observationsNote: 'Dictamen registrado en plataforma. Formalización física pendiente de impresión y firma manuscrita.',
     };
 
-    handleUpdateEvaluation({
+    const finalDefinitiveEvaluation: InstructorEvaluation = {
+      ...localEvaluation,
       isDefinitiveSaved: true,
       isLocked: true,
       evaluatedAt: now,
       lastModifiedAt: now,
-      modifiedBy: currentUser?.name || instructorEvaluation.instructorName || 'Instructor Técnico',
-      auditHistory: [...(instructorEvaluation.auditHistory || []), auditRecord],
-    });
+      modifiedBy: currentUser?.name || localEvaluation.instructorName || 'Instructor Técnico',
+      auditHistory: [...(localEvaluation.auditHistory || []), auditRecord],
+    };
 
-    onUpdateProject({ isLocked: true });
-    setAiErrorMessage(null);
-    setSaveNotification('Evaluación definitiva registrada exitosamente. El proyecto ha sido bloqueado para modificaciones ordinarias. Imprima el acta para la firma física del instructor.');
-    setTimeout(() => setSaveNotification(null), 7000);
+    // Optimistically update local state so UI immediately indicates saving definitive state
+    setLocalEvaluation(finalDefinitiveEvaluation);
+
+    try {
+      const result = await onUpdateProject({
+        isLocked: true,
+        instructorEvaluation: finalDefinitiveEvaluation,
+      }, 'Evaluación definitiva registrada por el instructor', 6, 'Panel de Evaluación (Fase 6)');
+
+      if (result && !result.success) {
+        // PRESERVE the entered values in the form, do NOT revert them to 92!
+        setLocalEvaluation((prev) => ({
+          ...prev,
+          isDefinitiveSaved: false,
+          isLocked: false,
+        }));
+        setAiErrorMessage(result.error || 'Error del servidor al registrar la evaluación definitiva. Se conservan los valores ingresados.');
+        return;
+      }
+
+      // ONLY display success when the server confirms the operation!
+      setAiErrorMessage(null);
+      setSaveNotification('Evaluación definitiva registrada exitosamente. El proyecto ha sido bloqueado para modificaciones ordinarias. Imprima el acta para la firma física del instructor.');
+      setTimeout(() => setSaveNotification(null), 7000);
+    } catch (err: any) {
+      console.error('Error al guardar evaluación definitiva:', err);
+      setLocalEvaluation((prev) => ({
+        ...prev,
+        isDefinitiveSaved: false,
+        isLocked: false,
+      }));
+      setAiErrorMessage(`Error de comunicación con el servidor: ${err.message || 'Error de red'}. Los valores modificados se mantienen en pantalla.`);
+    } finally {
+      setIsSavingDefinitive(false);
+    }
   };
 
   const handleOpenReopenModal = (target: GAESProject) => {
@@ -377,9 +469,42 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono px-3 py-1 bg-slate-950 rounded-xl border border-slate-800 text-slate-300">
-          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span>GAES Activo: <strong>GAES {project.gaesNumber}</strong></span>
+        {/* Active GAES Fast Selector */}
+        <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+          <span className="text-slate-400 font-medium hidden sm:inline">GAES a Evaluar:</span>
+          <select
+            value={project.id}
+            onChange={(e) => onSelectProject && onSelectProject(e.target.value)}
+            disabled={Boolean(isLoadingProjects || cohortProjects.length === 0)}
+            className="bg-slate-900 border border-slate-700 text-white font-semibold text-xs py-1 px-2.5 rounded-lg focus:outline-none focus:border-indigo-500 cursor-pointer max-w-[240px] truncate"
+            title="Cambiar GAES para evaluar y calificar"
+          >
+            {isLoadingProjects && cohortProjects.length === 0 ? (
+              <option value="" disabled className="bg-slate-800 text-slate-400">Cargando proyectos...</option>
+            ) : projectsLoadError && cohortProjects.length === 0 ? (
+              <option value="" disabled className="bg-slate-800 text-rose-300">Error de carga de proyectos</option>
+            ) : cohortProjects.length === 0 ? (
+              <option value="" disabled className="bg-slate-800 text-slate-400">Sin proyectos disponibles</option>
+            ) : (
+              cohortProjects.map((p) => (
+                <option key={p.id} value={p.id} className="bg-slate-900 text-slate-100">
+                  GAES {p.gaesNumber}: {p.company?.name || `GAES ${p.gaesNumber}`} (Ficha {p.fichaNumber})
+                </option>
+              ))
+            )}
+          </select>
+          {onRefreshProjects && (
+            <button
+              type="button"
+              onClick={onRefreshProjects}
+              disabled={isLoadingProjects}
+              title="Refrescar listado de proyectos desde el servidor"
+              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProjects ? 'animate-spin text-indigo-400' : ''}`} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -748,9 +873,13 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleSuggestAIEvaluation}
-              disabled={isGeneratingAI}
+              disabled={isGeneratingAI || Boolean(project.isLocked || localEvaluation.isDefinitiveSaved)}
               className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-indigo-950 transition-all disabled:opacity-50"
-              title="Solicitar propuesta pedagógica de apoyo a la IA (No emite calificaciones automáticas)"
+              title={
+                project.isLocked || localEvaluation.isDefinitiveSaved
+                  ? "Evaluación definitiva registrada. Debe habilitar modificación para solicitar nuevas propuestas de IA."
+                  : "Solicitar propuesta pedagógica de apoyo a la IA (No emite calificaciones automáticas)"
+              }
             >
               <Sparkles className="w-4 h-4 text-indigo-200" />
               <span>{isGeneratingAI ? 'Consultando IA...' : 'Proponer Evaluación IA'}</span>
@@ -828,7 +957,8 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
               <button
                 type="button"
                 onClick={handleApplyAiSuggestion}
-                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow"
+                disabled={Boolean(project.isLocked || localEvaluation.isDefinitiveSaved)}
+                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Copiar Observaciones al Formulario
               </button>
@@ -852,6 +982,237 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
           </button>
         </div>
       )}
+
+      {/* Empty / Error state alert when no GAES are found or on load error */}
+      {projectsLoadError ? (
+        <div className="bg-rose-950/60 border border-rose-500/60 rounded-2xl p-4 flex items-start justify-between gap-3 text-xs text-rose-200 shadow-xl animate-in fade-in">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <strong className="block text-white font-bold">Error al Cargar Proyectos del Servidor</strong>
+              <p className="text-rose-200 leading-relaxed">{projectsLoadError}</p>
+              <span className="text-[11px] text-rose-300/80 block font-mono">
+                Compruebe la conectividad con la base de datos o el backend.
+              </span>
+            </div>
+          </div>
+          {onRefreshProjects && (
+            <button
+              type="button"
+              onClick={onRefreshProjects}
+              className="px-3 py-1.5 rounded-lg bg-rose-900/60 hover:bg-rose-800 text-white font-semibold text-xs flex items-center gap-1.5 shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Reintentar</span>
+            </button>
+          )}
+        </div>
+      ) : cohortProjects.length === 0 ? (
+        <div className="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 text-center space-y-3 shadow-xl animate-in fade-in">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto">
+            <Users className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-white">Ausencia de Proyectos GAES Registrados</h3>
+          <p className="text-xs text-slate-300 max-w-xl mx-auto leading-relaxed">
+            Actualmente no hay proyectos formativos registrados en la Ficha <strong>{project.fichaNumber || 'de formación'}</strong>.
+            Para que aparezcan en este módulo de revisión, los líderes de cada GAES deben ingresar a la plataforma y formalizar el registro inicial en la <strong>Fase 1 (Registro Inicial de Proyecto)</strong>.
+          </p>
+          {onRefreshProjects && (
+            <button
+              type="button"
+              onClick={onRefreshProjects}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Actualizar Lista</span>
+            </button>
+          )}
+        </div>
+      ) : null}
+
+      {/* Tarjeta de Identificación, Empresa Asignada, Integrantes y Avances del GAES Activo */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-indigo-500/30 rounded-2xl p-5 shadow-xl space-y-4">
+        {/* Selector Desplegable en el Módulo de Revisión */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-3.5">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider bg-indigo-500/20 px-2.5 py-0.5 rounded border border-indigo-500/30">
+                Módulo de Revisión • GAES Activo
+              </span>
+              <span className="text-xs text-slate-400 font-mono">
+                Ficha {project.fichaNumber} • {project.regional || 'SENA'}
+              </span>
+            </div>
+            <h3 className="text-sm font-bold text-white">
+              Expediente Formativo: GAES {project.gaesNumber} — {project.company?.name || `Empresa GAES ${project.gaesNumber}`}
+            </h3>
+          </div>
+
+          {/* Selector de cambio directo entre GAES sin regresar al panel inicial */}
+          <div className="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800 shrink-0">
+            <Users className="w-4 h-4 text-emerald-400 shrink-0 ml-1" />
+            <label htmlFor="select-gaes-rubric-view" className="text-xs font-semibold text-slate-300 whitespace-nowrap hidden sm:inline">
+              Cambiar GAES a Evaluar:
+            </label>
+            <select
+              id="select-gaes-rubric-view"
+              value={project.id}
+              onChange={(e) => {
+                if (onSelectProject) {
+                  onSelectProject(e.target.value);
+                }
+              }}
+              disabled={Boolean(isLoadingProjects || cohortProjects.length === 0)}
+              className="bg-slate-900 border border-slate-700 text-white font-bold text-xs py-1.5 px-3 rounded-lg focus:outline-none focus:border-indigo-500 cursor-pointer min-w-[240px] max-w-xs truncate"
+              title="Selecciona otro GAES para revisar y calificar directamente"
+            >
+              {cohortProjects.map((p) => (
+                <option key={p.id} value={p.id} className="bg-slate-900 text-slate-100">
+                  GAES {p.gaesNumber}: {p.company?.name || `GAES ${p.gaesNumber}`} (Ficha {p.fichaNumber})
+                </option>
+              ))}
+            </select>
+            {onRefreshProjects && (
+              <button
+                type="button"
+                onClick={onRefreshProjects}
+                disabled={isLoadingProjects}
+                title="Actualizar listado desde el servidor"
+                className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingProjects ? 'animate-spin text-indigo-400' : ''}`} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Grid de 3 Columnas: Empresa, Integrantes y Avances */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          {/* 1. Empresa Asignada */}
+          <div className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1.5">
+              <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                Empresa Proyecto Formativo
+              </span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60">
+                GAES {project.gaesNumber}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bold text-white text-sm leading-snug">
+                {project.company?.name || `Empresa GAES ${project.gaesNumber}`}
+              </h4>
+              <p className="text-[11px] text-slate-400">
+                <strong className="text-slate-300">NIT:</strong>{' '}
+                <span className="font-mono text-slate-200">{project.company?.nit || 'Pendiente de asignación'}</span>
+              </p>
+              <p className="text-[11px] text-slate-400">
+                <strong className="text-slate-300">Sector Económico:</strong>{' '}
+                <span className="text-slate-200">{project.company?.sector || 'No especificado'}</span>
+              </p>
+              <p className="text-[11px] text-slate-400">
+                <strong className="text-slate-300">Tamaño / Ciudad:</strong>{' '}
+                <span className="text-slate-200">{project.company?.size || 'Microempresa'} • {project.company?.city || 'Valle del Cauca'}</span>
+              </p>
+              {project.company?.mainProduct && (
+                <p className="text-[11px] text-slate-400 pt-0.5 truncate">
+                  <strong className="text-slate-300">Producto Principal:</strong>{' '}
+                  <span className="text-slate-200">{project.company.mainProduct}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* 2. Integrantes del GAES */}
+          <div className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1.5">
+              <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-teal-400" />
+                Integrantes del GAES ({project.apprentices?.length || 0})
+              </span>
+              <span className="text-[10px] font-mono text-slate-400">
+                @soy.sena.edu.co
+              </span>
+            </div>
+            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              {project.apprentices && project.apprentices.length > 0 ? (
+                project.apprentices.map((a) => (
+                  <div key={a.id || a.document} className="bg-slate-900/90 border border-slate-800 p-1.5 rounded-lg text-[11px] flex items-center justify-between gap-1">
+                    <div className="truncate min-w-0">
+                      <span className="font-semibold text-white block truncate">{a.name}</span>
+                      <span className="text-[10px] text-teal-400 font-mono truncate block">{a.email}</span>
+                      <span className="text-[9px] text-slate-500 font-mono block">Doc: {a.document}</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 font-medium ${
+                      a.role === 'Líder GAES'
+                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold'
+                        : 'bg-slate-800 text-slate-300'
+                    }`}>
+                      {a.role}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <span className="text-slate-500 italic text-[11px] block py-3 text-center">
+                  Sin aprendices registrados en este GAES.
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* 3. Avances Registrados & Métricas */}
+          <div className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1.5">
+              <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                <BarChart3 className="w-3.5 h-3.5 text-purple-400" />
+                Avances Registrados
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                project.isLocked
+                  ? 'bg-amber-950/80 text-amber-300 border-amber-600/60'
+                  : 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
+              }`}>
+                {project.isLocked ? 'Bloqueado (Definitivo)' : 'En Proceso Formativo'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-400 text-[10px] block">Fase de Avance:</span>
+                <strong className="text-indigo-300 font-mono">Fase {project.currentStep || 1} de 6</strong>
+              </div>
+              <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-400 text-[10px] block">Matrices Estratégicas:</span>
+                <strong className={project.isMatricesValidated ? 'text-emerald-400' : 'text-amber-400'}>
+                  {project.isMatricesValidated ? 'Validadas (1.00)' : 'En Calibración'}
+                </strong>
+              </div>
+              <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-400 text-[10px] block">Vector PEYEA:</span>
+                <strong className="text-purple-300 truncate block">
+                  {project.peyea?.quadrant || 'Diagnóstico Pendiente'}
+                </strong>
+              </div>
+              <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-400 text-[10px] block">Entregables Previos:</span>
+                <strong className="text-teal-300 font-mono">
+                  {Array.isArray(project.learningGuidesDeliverables)
+                    ? `${project.learningGuidesDeliverables.filter((d) => d.cumple).length} / 48`
+                    : 'En revisión'}
+                </strong>
+              </div>
+            </div>
+            <div className="pt-1 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono">
+              <span className="text-slate-400">Puntajes Actuales:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-bold">Prod: {localEvaluation.productEvidenceScore || 0}/100</span>
+                <span className="text-slate-600">•</span>
+                <span className="text-blue-400 font-bold">Desemp: {localEvaluation.performanceEvidenceScore || 0}/100</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Instructor Identification & Final Decision Bar */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-xl space-y-4">
@@ -1020,10 +1381,15 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
               <button
                 type="button"
                 onClick={handleSaveDefinitiveEvaluation}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-1.5 hover:scale-[1.02]"
+                disabled={isSavingDefinitive}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald-950 transition-all flex items-center gap-1.5 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save className="w-4 h-4 text-emerald-200" />
-                <span>Guardar Evaluación Definitiva</span>
+                {isSavingDefinitive ? (
+                  <RefreshCw className="w-4 h-4 text-emerald-200 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 text-emerald-200" />
+                )}
+                <span>{isSavingDefinitive ? 'Guardando en Servidor...' : 'Guardar Evaluación Definitiva'}</span>
               </button>
             )}
           </div>

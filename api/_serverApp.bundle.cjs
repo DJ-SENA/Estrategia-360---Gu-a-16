@@ -26022,9 +26022,9 @@ var serverStorage = {
             project.version || 1,
             JSON.stringify(project)
           ]);
-          const existingIdx = memoryProjects.findIndex((p) => p.id === project.id);
-          if (existingIdx !== -1) {
-            memoryProjects[existingIdx] = project;
+          const existingIdx2 = memoryProjects.findIndex((p) => p.id === project.id);
+          if (existingIdx2 !== -1) {
+            memoryProjects[existingIdx2] = project;
           } else {
             memoryProjects.unshift(project);
           }
@@ -26044,6 +26044,12 @@ var serverStorage = {
         success: false,
         error: "Persistencia rechazada: En Vercel no se permite almacenar datos en memoria ef\xEDmera. Configure la variable DATABASE_URL con Neon PostgreSQL."
       };
+    }
+    const existingIdx = memoryProjects.findIndex((p) => p.id === project.id);
+    if (existingIdx !== -1) {
+      memoryProjects[existingIdx] = project;
+    } else {
+      memoryProjects.unshift(project);
     }
     const ok = atomicSaveToFile(memoryProjects);
     return { success: ok, error: ok ? void 0 : "Error al escribir archivo JSON local." };
@@ -26727,12 +26733,22 @@ apiRouter.put("/projects/:id", async (req, res) => {
     newVersion: String(nextVersion),
     description: auditDescription
   };
-  const shouldLock = session.user.role === "INSTRUCTOR" ? Boolean(sanitizedUpdates.instructorEvaluation?.isDefinitiveSaved) : existing.isLocked;
+  const shouldLock = session.user.role === "INSTRUCTOR" ? sanitizedUpdates.instructorEvaluation?.isDefinitiveSaved !== void 0 ? Boolean(sanitizedUpdates.instructorEvaluation.isDefinitiveSaved) : sanitizedUpdates.isLocked !== void 0 ? Boolean(sanitizedUpdates.isLocked) : existing.isLocked : existing.isLocked;
+  const mergedInstructorEvaluation = sanitizedUpdates.instructorEvaluation ? {
+    ...existing.instructorEvaluation,
+    ...sanitizedUpdates.instructorEvaluation,
+    isDefinitiveSaved: shouldLock,
+    isLocked: shouldLock
+  } : existing.instructorEvaluation ? {
+    ...existing.instructorEvaluation,
+    isLocked: shouldLock
+  } : void 0;
   const mergedProject = {
     ...existing,
     ...sanitizedUpdates,
     id: existing.id,
     gaesNumber: existing.gaesNumber,
+    instructorEvaluation: mergedInstructorEvaluation,
     version: nextVersion,
     isLocked: shouldLock,
     lastUpdated: now,

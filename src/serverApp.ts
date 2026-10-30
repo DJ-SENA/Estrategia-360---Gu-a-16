@@ -730,14 +730,31 @@ apiRouter.put('/projects/:id', async (req: Request, res: Response) => {
   };
 
   const shouldLock = session.user.role === 'INSTRUCTOR'
-    ? Boolean(sanitizedUpdates.instructorEvaluation?.isDefinitiveSaved)
+    ? (sanitizedUpdates.instructorEvaluation?.isDefinitiveSaved !== undefined
+        ? Boolean(sanitizedUpdates.instructorEvaluation.isDefinitiveSaved)
+        : (sanitizedUpdates.isLocked !== undefined ? Boolean(sanitizedUpdates.isLocked) : existing.isLocked))
     : existing.isLocked;
+
+  const mergedInstructorEvaluation = sanitizedUpdates.instructorEvaluation
+    ? {
+        ...existing.instructorEvaluation,
+        ...sanitizedUpdates.instructorEvaluation,
+        isDefinitiveSaved: shouldLock,
+        isLocked: shouldLock,
+      }
+    : (existing.instructorEvaluation
+        ? {
+            ...existing.instructorEvaluation,
+            isLocked: shouldLock,
+          }
+        : undefined);
 
   const mergedProject: GAESProject = {
     ...existing,
     ...sanitizedUpdates,
     id: existing.id,
     gaesNumber: existing.gaesNumber,
+    instructorEvaluation: mergedInstructorEvaluation as any,
     version: nextVersion,
     isLocked: shouldLock,
     lastUpdated: now,

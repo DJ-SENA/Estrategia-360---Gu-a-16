@@ -11,17 +11,93 @@
 }
 
 @media print {
-  body {
-    background-color: white !important;
-    color: black !important;
+  @page {
+    size: A4 portrait;
+    margin: 10mm 10mm 12mm 10mm;
   }
+
+  /* Reset body and backgrounds */
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When printing, hide background UI */
   .no-print {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
+
+  /* Normalize modal container for natural continuous page flow */
+  .sena-print-modal-backdrop {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+    inset: auto !important;
+  }
+
+  .sena-print-modal-container {
+    position: static !important;
+    display: block !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+
+  #sena-printable-report {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    color: #0f172a !important;
+    background: #ffffff !important;
+  }
+
+  /* Prevent awkward page breaks in tables and evaluation cards */
+  table, tr, td, th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .avoid-page-break,
+  .sena-signature-block,
+  .sena-criteria-card,
+  .sena-indicator-card,
+  .sena-section-box {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
   .print-page-break {
-    page-break-before: always;
+    page-break-before: always !important;
+    break-before: page !important;
   }
 }
+

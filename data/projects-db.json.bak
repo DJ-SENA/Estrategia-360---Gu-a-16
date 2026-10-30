@@ -8539,7 +8539,7 @@
     "programName": "Tecnólogo en Gestión Empresarial",
     "centerName": "Centro de Gestión y Desarrollo Agroindustrial",
     "regional": "Regional Valle del Cauca",
-    "lastUpdated": "2026-10-10T14:20:00.000Z",
+    "lastUpdated": "2026-10-30T18:57:00.763Z",
     "currentStep": 4,
     "isMatricesValidated": true,
     "matricesValidatedAt": "2026-10-09T16:00:00.000Z",
@@ -10577,12 +10577,12 @@
     },
     "instructorEvaluation": {
       "evaluatedAt": "2026-10-12T10:00:00.000Z",
-      "instructorName": "Ing. Carlos Mendoza Alarcón",
+      "instructorName": "Instructor Técnico SENA",
       "instructorDocument": "19.458.231 de Bogotá",
       "finalJudgment": "APROBADO",
-      "productEvidenceScore": 92,
+      "productEvidenceScore": 85,
       "performanceEvidenceScore": 90,
-      "isLocked": false,
+      "isLocked": true,
       "criteria": [
         {
           "id": "c1",
@@ -10663,11 +10663,42 @@
         }
       ],
       "productObservation": "El GAES 1 entrega un trabajo de alta calidad con excelente articulación entre matrices y BSC.",
-      "performanceObservation": "Demuestran gran dominio conceptual y defensa sustentada en cifras."
+      "performanceObservation": "Demuestran gran dominio conceptual y defensa sustentada en cifras.",
+      "isDefinitiveSaved": false
     },
-    "version": 1,
+    "version": 3,
     "isLocked": false,
     "collaborationHistory": [
+      {
+        "id": "audit-a866ba3eb348",
+        "timestamp": "2026-10-30T18:57:00.763Z",
+        "userId": "inst-97e2627d68c8",
+        "userName": "Instructor Técnico Evaluador SENA",
+        "userEmail": "evaluador.tecnico@sena.edu.co",
+        "gaesNumber": 1,
+        "fichaNumber": "2687410",
+        "phase": 6,
+        "component": "Reapertura de Proyecto Evaluado",
+        "operationType": "REAPERTURA",
+        "previousVersion": "2",
+        "newVersion": "3",
+        "description": "Reapertura formativa autorizada por Instructor Técnico Evaluador SENA. Motivo: Plan de Mejoramiento Formativo acordado"
+      },
+      {
+        "id": "audit-ff1139094ffc",
+        "timestamp": "2026-10-30T18:56:53.195Z",
+        "userId": "inst-dc6450fcb12b",
+        "userName": "Instructor Técnico Evaluador SENA",
+        "userEmail": "evaluador.tecnico@sena.edu.co",
+        "gaesNumber": 1,
+        "fichaNumber": "2687410",
+        "phase": 4,
+        "component": "Balanced Scorecard (Fase 4)",
+        "operationType": "EVALUAR",
+        "previousVersion": "1",
+        "newVersion": "2",
+        "description": "Evaluación o retroalimentación registrada por Instructor Técnico Evaluador SENA"
+      },
       {
         "id": "audit-init-1",
         "timestamp": "2026-10-10T14:20:00.000Z",
@@ -10682,7 +10713,10 @@
         "newVersion": "1",
         "description": "Constitución formal del GAES 1 para la empresa EcoModa Textil S.A.S.."
       }
-    ]
+    ],
+    "reopenedAt": "2026-10-30T18:57:00.763Z",
+    "reopenedBy": "Instructor Técnico Evaluador SENA",
+    "reopenReason": "Plan de Mejoramiento Formativo acordado"
   },
   {
     "id": "gaes-2-biocafe",
@@ -15038,7 +15072,7 @@
     "programName": "Tecnólogo en Gestión Empresarial",
     "centerName": "Centro de Gestión y Desarrollo Agroindustrial",
     "regional": "Regional Valle del Cauca",
-    "lastUpdated": "2026-10-27T18:34:45.561Z",
+    "lastUpdated": "2026-10-27T18:34:45.676Z",
     "currentStep": 3,
     "isMatricesValidated": true,
     "matricesValidatedAt": "2026-10-09T12:00:00.000Z",
@@ -17067,13 +17101,28 @@
       ]
     },
     "instructorEvaluation": {
-      "isDefinitiveSaved": true,
+      "isDefinitiveSaved": false,
       "finalJudgment": "APROBADO",
       "instructorName": "Instructor SENA"
     },
-    "version": 8,
-    "isLocked": true,
+    "version": 9,
+    "isLocked": false,
     "collaborationHistory": [
+      {
+        "id": "audit-aba8b9e30c6e",
+        "timestamp": "2026-10-27T18:34:45.676Z",
+        "userId": "inst-db71cc77900a",
+        "userName": "Instructor Principal SENA",
+        "userEmail": "instructor.lider@sena.edu.co",
+        "gaesNumber": 4,
+        "fichaNumber": "2687410",
+        "phase": 6,
+        "component": "Reapertura de Proyecto Evaluado",
+        "operationType": "REAPERTURA",
+        "previousVersion": "8",
+        "newVersion": "9",
+        "description": "Reapertura formativa autorizada por Instructor Principal SENA. Motivo: Plan de Mejoramiento Formativo concertado bajo Reglamento del Aprendiz SENA para reajustar matriz MEFI y objetivos BSC."
+      },
       {
         "id": "audit-379246bb677f",
         "timestamp": "2026-10-27T18:34:45.561Z",
@@ -17194,7 +17243,7 @@
         "description": "Constitución formal del GAES 4 para la empresa LogiPack Soluciones S.A.S.."
       }
     ],
-    "reopenedAt": "2026-10-22T19:35:09.862Z",
+    "reopenedAt": "2026-10-27T18:34:45.676Z",
     "reopenedBy": "Instructor Principal SENA",
     "reopenReason": "Plan de Mejoramiento Formativo concertado bajo Reglamento del Aprendiz SENA para reajustar matriz MEFI y objetivos BSC."
   },

@@ -457,5 +457,39 @@ export function exportFinalReportAndMatricesExcel(project: GAESProject) {
   const cleanCompanyName = (project.company?.name || 'Empresa').replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `Informe_Final_Matrices_Guia16_GAES_${project.gaesNumber}_${cleanCompanyName}.xlsx`;
 
-  XLSX.writeFile(wb, fileName);
+  try {
+    // Generate array buffer for maximum browser compatibility
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    });
+
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (document.body.contains(a)) {
+          document.body.removeChild(a);
+        }
+        window.URL.revokeObjectURL(url);
+      }, 200);
+    } else {
+      XLSX.writeFile(wb, fileName);
+    }
+    return { success: true, fileName };
+  } catch (err: any) {
+    console.error('Error al generar Blob Excel, intentando XLSX.writeFile directo:', err);
+    try {
+      XLSX.writeFile(wb, fileName);
+      return { success: true, fileName };
+    } catch (fallbackErr: any) {
+      throw new Error(fallbackErr?.message || err?.message || 'Error al descargar el archivo Excel');
+    }
+  }
 }
+

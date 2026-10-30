@@ -33,6 +33,8 @@ interface HeaderProps {
   lastSavedTime?: string;
   onExportJson?: () => void;
   onImportJson?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoadingProjects?: boolean;
+  projectsLoadError?: string | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -50,6 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
   lastSavedTime,
   onExportJson,
   onImportJson,
+  isLoadingProjects,
+  projectsLoadError,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-xl">
@@ -97,34 +101,57 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Project Selector dropdown: Instructors can switch GAES; Apprentices are scoped to their assigned GAES */}
           {currentUser?.role === 'INSTRUCTOR' ? (
             <div className="relative inline-flex items-center bg-slate-800/80 rounded-lg p-1 border border-slate-700/80">
-              <Users className="w-3.5 h-3.5 text-indigo-400 ml-2 mr-1.5" />
+              <Users className="w-3.5 h-3.5 text-indigo-400 ml-2 mr-1.5 shrink-0" />
               <select
                 value={currentProject.id}
                 onChange={(e) => onSelectProject(e.target.value)}
-                className="bg-transparent text-xs text-slate-200 font-medium py-1 pr-6 pl-1 focus:outline-none cursor-pointer"
+                disabled={Boolean(isLoadingProjects && projectsList.length === 0)}
+                className="bg-transparent text-xs text-slate-200 font-medium py-1 pr-6 pl-1 focus:outline-none cursor-pointer max-w-[240px] truncate"
                 title="Seleccionar GAES a evaluar"
               >
-                {projectsList.some((p) => !p.isDemoProject) && (
-                  <optgroup label="Proyectos Reales Formativos" className="bg-slate-900 text-emerald-400 font-semibold">
-                    {projectsList
-                      .filter((p) => !p.isDemoProject)
-                      .map((p) => (
-                        <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
-                          GAES {p.gaesNumber}: {p.company.name} (Ficha {p.fichaNumber})
-                        </option>
-                      ))}
-                  </optgroup>
-                )}
-                {projectsList.some((p) => p.isDemoProject) && (
-                  <optgroup label="Proyectos de Demostración (Pruebas)" className="bg-slate-900 text-amber-400 font-semibold">
-                    {projectsList
-                      .filter((p) => p.isDemoProject)
-                      .map((p) => (
-                        <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
-                          [DEMO] GAES {p.gaesNumber}: {p.company.name}
-                        </option>
-                      ))}
-                  </optgroup>
+                {isLoadingProjects && projectsList.length === 0 ? (
+                  <option value="" disabled className="bg-slate-800 text-slate-400">
+                    Cargando proyectos...
+                  </option>
+                ) : projectsLoadError && projectsList.length === 0 ? (
+                  <option value="" disabled className="bg-slate-800 text-rose-300">
+                    Error al cargar proyectos
+                  </option>
+                ) : projectsList.length === 0 ? (
+                  <option value="" disabled className="bg-slate-800 text-slate-400">
+                    No hay proyectos registrados
+                  </option>
+                ) : (
+                  <>
+                    {projectsList.some((p) => !p.isDemoProject) && (
+                      <optgroup label="Proyectos Formativos Registrados" className="bg-slate-900 text-emerald-400 font-semibold">
+                        {projectsList
+                          .filter((p) => !p.isDemoProject)
+                          .map((p) => (
+                            <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
+                              GAES {p.gaesNumber}: {p.company?.name || `GAES ${p.gaesNumber}`} (Ficha {p.fichaNumber})
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
+                    {projectsList.some((p) => p.isDemoProject) && (
+                      <optgroup label="Proyectos de Demostración" className="bg-slate-900 text-amber-400 font-semibold">
+                        {projectsList
+                          .filter((p) => p.isDemoProject)
+                          .map((p) => (
+                            <option key={p.id} value={p.id} className="bg-slate-800 text-slate-200">
+                              [DEMO] GAES {p.gaesNumber}: {p.company?.name || `GAES ${p.gaesNumber}`}
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
+                    {/* Ensure currentProject is always selectable even if pending server sync */}
+                    {!projectsList.some((p) => p.id === currentProject.id) && (
+                      <option key={currentProject.id} value={currentProject.id} className="bg-slate-800 text-slate-200">
+                        GAES {currentProject.gaesNumber}: {currentProject.company?.name || `GAES ${currentProject.gaesNumber}`}
+                      </option>
+                    )}
+                  </>
                 )}
               </select>
               <button
