@@ -323,6 +323,17 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
       return;
     }
 
+    // No permitir formalizar una evaluación con competencias sin valorar.
+    const criteria = localEvaluation.criteria || [];
+    if (criteria.length !== 7 || criteria.some((c) => c.status === 'Pendiente de Evaluación')) {
+      setAiErrorMessage('Debe evaluar las siete competencias antes de guardar la evaluación definitiva. Revise las competencias pendientes.');
+      return;
+    }
+    if (criteria.some((c) => !Number.isFinite(c.score) || c.score < 0 || c.score > 100)) {
+      setAiErrorMessage('Las puntuaciones de las competencias deben estar entre 0 y 100.');
+      return;
+    }
+
     setIsSavingDefinitive(true);
     setAiErrorMessage(null);
 
@@ -1458,6 +1469,7 @@ export const Step6_InstructorPanel: React.FC<Step6Props> = ({
                         : 'bg-amber-950/60 text-amber-400 border-amber-500/40'
                     }`}
                   >
+                    <option value="Pendiente de Evaluación">Pendiente de Evaluación</option>
                     <option value="Cumple">Cumple satisfactoriamente</option>
                     <option value="Por Mejorar">Por Mejorar</option>
                     <option value="No Evidenciado">No Evidenciado</option>
