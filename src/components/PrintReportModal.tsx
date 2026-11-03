@@ -32,8 +32,6 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
   onClose,
   project,
 }) => {
-  if (!isOpen) return null;
-
   const mefiCalc = calculateMEFIScore(project.mefi);
   const mefeCalc = calculateMEFEScore(project.mefe);
   const compReport = calculateCompetenciesProgress(project);
@@ -42,6 +40,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  if (!isOpen) return null;
 
   // Status computation for preliminary draft vs definitive evaluation
   const isPendingEvaluation =
@@ -77,6 +77,8 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
     setSuccessMessage(null);
 
     try {
+      // Capture protected blocks in the same cloned layout used to render the PDF.
+      let protectedBlocks: Array<{ top: number; bottom: number }> = [];
       // Create canvas from printable report with robust scaling and layout
       const canvas = await html2canvas(reportElement, {
         scale: 2,
@@ -99,6 +101,19 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
           }
           const noPrints = clonedDoc.querySelectorAll('.no-print');
           noPrints.forEach((np) => np.remove());
+          if (el) {
+            const rootRect = el.getBoundingClientRect();
+            const rootHeight = Math.max(rootRect.height, 1);
+            protectedBlocks = Array.from(
+              el.querySelectorAll<HTMLElement>('.avoid-page-break, .sena-signature-block, .sena-indicator-card, .sena-criteria-card')
+            ).map((node) => {
+              const rect = node.getBoundingClientRect();
+              return {
+                top: Math.max(0, (rect.top - rootRect.top) / rootHeight),
+                bottom: Math.min(1, (rect.bottom - rootRect.top) / rootHeight),
+              };
+            }).filter((range) => range.bottom > range.top);
+          }
         },
       });
 
@@ -119,54 +134,66 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
       const printWidth = pdfWidth - margin * 2; // 194 mm
       const printHeight = pdfHeight - margin * 2; // 281 mm
 
-      // Canvas pixels per mm
+      // Compute all page slices before numbering. Avoid cutting a protected
+      // block when it can fit on a fresh page. Oversized blocks are split safely.
       const pxPerMm = canvas.width / printWidth;
-      const pageHeightPx = Math.floor(printHeight * pxPerMm);
-
+      const pageHeightPx = Math.max(1, Math.floor(printHeight * pxPerMm));
+      const ranges = protectedBlocks.map((range) => ({
+        top: Math.round(range.top * canvas.height),
+        bottom: Math.round(range.bottom * canvas.height),
+      }));
+      const slices: Array<{ start: number; height: number }> = [];
       let currentYPx = 0;
-      let pageNumber = 1;
-      const totalPages = Math.ceil(canvas.height / pageHeightPx) || 1;
 
       while (currentYPx < canvas.height) {
-        if (pageNumber > 1) {
-          pdf.addPage();
+        let endYPx = Math.min(currentYPx + pageHeightPx, canvas.height);
+        const minUsableHeight = Math.floor(pageHeightPx * 0.35);
+        const crossing = ranges
+          .filter((range) =>
+            range.top > currentYPx + minUsableHeight &&
+            range.top < endYPx &&
+            range.bottom > endYPx &&
+            range.bottom - range.top <= pageHeightPx
+          )
+          .sort((a, b) => a.top - b.top);
+        if (crossing.length > 0) {
+          endYPx = crossing[0].top;
         }
+        // Guarantee forward progress even for unusually tall sections.
+        if (endYPx <= currentYPx) {
+          endYPx = Math.min(currentYPx + pageHeightPx, canvas.height);
+        }
+        slices.push({ start: currentYPx, height: endYPx - currentYPx });
+        currentYPx = endYPx;
+      }
 
-        const chunkHeightPx = Math.min(pageHeightPx, canvas.height - currentYPx);
-
-        // Sub-canvas for this page slice
+      const totalPages = slices.length;
+      slices.forEach((slice, index) => {
+        if (index > 0) pdf.addPage();
         const pageCanvas = document.createElement('canvas');
         pageCanvas.width = canvas.width;
-        pageCanvas.height = pageHeightPx;
+        pageCanvas.height = slice.height;
         const pageCtx = pageCanvas.getContext('2d');
-        if (pageCtx) {
-          pageCtx.fillStyle = '#ffffff';
-          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-          pageCtx.drawImage(
-            canvas,
-            0, currentYPx, canvas.width, chunkHeightPx,
-            0, 0, canvas.width, chunkHeightPx
-          );
-        }
-
+        if (!pageCtx) throw new Error('No fue posible crear el lienzo de una página.');
+        pageCtx.fillStyle = '#ffffff';
+        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        pageCtx.drawImage(
+          canvas,
+          0, slice.start, canvas.width, slice.height,
+          0, 0, canvas.width, slice.height
+        );
         const chunkImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-        const chunkHeightMm = (chunkHeightPx / canvas.width) * printWidth;
-
+        const chunkHeightMm = slice.height / pxPerMm;
         pdf.addImage(chunkImgData, 'JPEG', margin, margin, printWidth, chunkHeightMm);
 
-        // Page numbering & institutional footer
-        pdf.setFontSize(8);
+        // Footer uses the actual number of pages after pagination.
+        pdf.setFontSize(7);
         pdf.setTextColor(100, 116, 139);
-        pdf.text(
-          `SENA Guía 16 • Ficha ${project.fichaNumber || '2687410'} • GAES ${project.gaesNumber} • Página ${pageNumber} de ${totalPages} • Documento Oficial para Firma Física Manuscrita`,
-          pdfWidth / 2,
-          pdfHeight - 4,
-          { align: 'center' }
-        );
-
-        currentYPx += pageHeightPx;
-        pageNumber++;
-      }
+        const footer = `SENA Guía 16 • Ficha ${project.fichaNumber || 'Sin ficha'} • GAES ${project.gaesNumber} • Página ${index + 1} de ${totalPages} • Firma manuscrita del instructor`;
+        pdf.text(footer, pdfWidth / 2, pdfHeight - 4, {
+          align: 'center', maxWidth: pdfWidth - margin * 2,
+        });
+      });
 
       const cleanCompanyName = (project.company?.name || 'Empresa').replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `Acta_Final_Guia16_GAES_${project.gaesNumber}_${cleanCompanyName}.pdf`;
@@ -470,7 +497,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 3. Validación de Insumos & Entregables de Guías Previas (Eje Articulador)
               </span>
               <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono">
-                {project.learningGuidesDeliverables?.filter((d) => d.cumple).length || 93} de {project.learningGuidesDeliverables?.length || 93} Parámetros Validados
+                {project.learningGuidesDeliverables?.filter((d) => d.cumple).length ?? 0} de {project.learningGuidesDeliverables?.length ?? 0} Parámetros Validados
               </span>
             </div>
             <div className="grid grid-cols-5 gap-2 text-[10px] text-center font-mono">
