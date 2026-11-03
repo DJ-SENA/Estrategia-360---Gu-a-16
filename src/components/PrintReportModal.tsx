@@ -10,7 +10,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { GAESProject } from '../types';
 import { calculateMEFIScore, calculateMEFEScore } from '../utils/strategicCalculations';
 import { SENA_LOGO_SVG } from '../assets/senaLogo';
