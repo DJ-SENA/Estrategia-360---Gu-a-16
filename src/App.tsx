@@ -399,37 +399,55 @@ export default function App() {
   };
 
   const handleNewProject = async () => {
-    const nextNumber = projects.length + 1;
-    const newProj = createBlankGAESProject(nextNumber, currentProject.fichaNumber || '2687410');
+  if (!currentUser?.token) {
+    showNotification(
+      'Debe iniciar sesión para registrar un GAES en el servidor.'
+    );
+    return;
+  }
 
-    if (currentUser?.token) {
-      try {
-        const response = await fetch('/api/projects', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-          body: JSON.stringify(newProj),
-        });
-        const data = await response.json();
-        if (data.success && data.project) {
-          setProjects((prev) => [data.project, ...prev]);
-          setCurrentProjectId(data.project.id);
-          setCurrentStep(1);
-          showNotification(`Se ha registrado el GAES ${nextNumber} exitosamente en el servidor.`);
-          return;
-        }
-      } catch (err) {
-        console.error('Error al crear proyecto en servidor:', err);
-      }
+  const nextNumber =
+    Math.max(0, ...projects.map(p => Number(p.gaesNumber) || 0)) + 1;
+
+  const newProj = createBlankGAESProject(
+    nextNumber,
+    currentProject?.fichaNumber || '2687410'
+  );
+
+  try {
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${currentUser.token}`,
+      },
+      body: JSON.stringify(newProj),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.success || !data.project) {
+      showNotification(
+        data.error ||
+        `No se pudo registrar el GAES en PostgreSQL (HTTP ${response.status}).`
+      );
+      return;
     }
 
-    setProjects((prev) => [newProj, ...prev]);
-    setCurrentProjectId(newProj.id);
+    setProjects(prev => [data.project, ...prev]);
+    setCurrentProjectId(data.project.id);
     setCurrentStep(1);
-    showNotification(`Se ha creado el GAES ${nextNumber} exitosamente.`);
-  };
+
+    showNotification(
+      `GAES ${nextNumber} registrado correctamente en el servidor.`
+    );
+  } catch (err) {
+    console.error('Error al crear proyecto en servidor:', err);
+    showNotification(
+      'Error de conexión. El GAES no fue registrado. Intente nuevamente.'
+    );
+  }
+};
 
   const handleResetToDemo = () => {
     setIsConfirmResetOpen(true);
