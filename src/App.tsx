@@ -527,7 +527,26 @@ export default function App() {
       />
     );
   }
+if (projects.length === 0 && !isLoadingProjects) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6">
+        <h1 className="text-3xl font-bold mb-4">
+          EstrategIA 360 - Guía 16
+        </h1>
 
+        <p className="text-slate-300 mb-6 text-center">
+          No hay GAES registrados en el servidor.
+        </p>
+
+        <button
+          onClick={handleNewProject}
+          className="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-lg font-semibold"
+        >
+          Registrar primer GAES
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
       {/* Top Header */}
