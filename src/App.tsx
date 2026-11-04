@@ -42,7 +42,7 @@ export default function App() {
         console.error('Error loading saved projects:', e);
       }
     }
-    return INITIAL_COHORT_PROJECTS;
+    return [];
   });
 
   // Authentication State with Email
