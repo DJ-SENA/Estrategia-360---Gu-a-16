@@ -3,7 +3,6 @@ import {
   mockProjectAgroLacteos, 
   createBlankGAESProject 
 } from './data/mockProjects';
-import { INITIAL_COHORT_PROJECTS } from './data/cohortMockProjects';
 import { GAESProject, AuthUser } from './types';
 import { runStrategicAudit } from './utils/strategicCalculations';
 import { synthesizePriorGuidesToMatrices } from './utils/strategicSynthesis';
@@ -30,20 +29,9 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [projects, setProjects] = useState<GAESProject[]>(() => {
-    const saved = localStorage.getItem('sena_guia16_projects');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 2) {
-          return parsed;
-        }
-      } catch (e) {
-        console.error('Error loading saved projects:', e);
-      }
-    }
-    return [];
-  });
+  // Los proyectos solo se muestran después de obtenerlos del servidor autorizado.
+  // No cargar respaldos locales como si fueran datos oficiales.
+  const [projects, setProjects] = useState<GAESProject[]>([]);
 
   // Authentication State with Email
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
@@ -59,7 +47,7 @@ export default function App() {
   });
 
   const [currentProjectId, setCurrentProjectId] = useState<string>(
-    mockProjectAgroLacteos.id
+    ''
   );
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isInstructorMode, setIsInstructorMode] = useState<boolean>(() => {
@@ -136,9 +124,9 @@ export default function App() {
     fetchAuthorizedProjects(currentUser.token);
   }, [currentUser?.token]);
 
-  // Sync projects with localStorage as secondary backup
+  // El servidor es la fuente de verdad; no guardar proyectos oficiales en el navegador.
   useEffect(() => {
-    localStorage.setItem('sena_guia16_projects', JSON.stringify(projects));
+    localStorage.removeItem('sena_guia16_projects');
     const now = new Date();
     setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   }, [projects]);
@@ -398,67 +386,15 @@ export default function App() {
     }
   };
 
-  const handleNewProject = async () => {
-  if (!currentUser?.token) {
-    showNotification(
-      'Debe iniciar sesión para registrar un GAES en el servidor.'
-    );
-    return;
-  }
-
-  const nextNumber =
-    Math.max(0, ...projects.map(p => Number(p.gaesNumber) || 0)) + 1;
-
-  const newProj = createBlankGAESProject(
-    nextNumber,
-    currentProject?.fichaNumber || '2687410'
-  );
-
-  try {
-    const response = await fetch('/api/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`,
-      },
-      body: JSON.stringify(newProj),
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || !data.success || !data.project) {
-      showNotification(
-        data.error ||
-        `No se pudo registrar el GAES en PostgreSQL (HTTP ${response.status}).`
-      );
-      return;
-    }
-
-    setProjects(prev => [data.project, ...prev]);
-    setCurrentProjectId(data.project.id);
-    setCurrentStep(1);
-
-    showNotification(
-      `GAES ${nextNumber} registrado correctamente en el servidor.`
-    );
-  } catch (err) {
-    console.error('Error al crear proyecto en servidor:', err);
-    showNotification(
-      'Error de conexión. El GAES no fue registrado. Intente nuevamente.'
-    );
-  }
-};
-
-  const handleResetToDemo = () => {
-    setIsConfirmResetOpen(true);
+  // El registro inicial debe efectuarse en el portal de acceso con los datos
+  // reales del líder y de la empresa, no desde una plantilla incompleta.
+  const handleNewProject = () => {
+    showNotification('Para registrar un GAES nuevo, cierre sesión y seleccione Registrar GAES en el portal de acceso.');
   };
 
-  const executeResetToDemo = () => {
-    setProjects((prev) =>
-      prev.map((p) => (p.id === currentProject.id ? { ...mockProjectAgroLacteos, id: p.id } : p))
-    );
-    setIsConfirmResetOpen(false);
-    showNotification('Datos modelo de AgroLácteos del Valle restaurados exitosamente.');
+  // Se deshabilita la restauración de datos de demostración en proyectos reales.
+  const handleResetToDemo = () => {
+    showNotification('Restauración de datos modelo deshabilitada para proteger los proyectos oficiales.');
   };
 
   const handleSynthesizeMatrices = () => {
@@ -535,14 +471,14 @@ if (projects.length === 0 && !isLoadingProjects) {
         </h1>
 
         <p className="text-slate-300 mb-6 text-center">
-          No hay GAES registrados en el servidor.
+          No hay GAES autorizados para esta cuenta. Compruebe su conexión o registre el GAES desde el portal de acceso.
         </p>
 
         <button
-          onClick={handleNewProject}
+          onClick={() => { setCurrentUser(null); setProjects([]); }}
           className="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-lg font-semibold"
         >
-          Registrar primer GAES
+          Consultar registro institucional
         </button>
       </div>
     );
@@ -770,40 +706,6 @@ if (projects.length === 0 && !isLoadingProjects) {
         project={currentProject}
       />
 
-      {/* Reset Confirmation Modal */}
-      {isConfirmResetOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs text-slate-200">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-white">¿Restaurar Proyecto Modelo?</h3>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Esta acción restaurará los datos del proyecto formativo modelo <strong>AgroLácteos del Valle (GAES 3)</strong> con todas sus matrices y Balanced Scorecard calibrados.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setIsConfirmResetOpen(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={executeResetToDemo}
-                className="bg-gradient-to-r from-amber-600 to-emerald-600 hover:from-amber-500 hover:to-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg shadow-amber-950 transition-all hover:scale-[1.02]"
-              >
-                Sí, Restaurar Datos
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 text-slate-500 text-[11px] py-4 px-4 text-center mt-auto">
@@ -814,7 +716,7 @@ if (projects.length === 0 && !isLoadingProjects) {
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 font-mono text-[10px]">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Auto-guardado: {lastSavedTime}
+              Última sincronización local: {lastSavedTime}
             </span>
             <span className="text-slate-400 font-mono">
               Usuario: {currentUser.email} ({currentUser.role === 'INSTRUCTOR' ? 'Instructor' : 'Aprendiz'})

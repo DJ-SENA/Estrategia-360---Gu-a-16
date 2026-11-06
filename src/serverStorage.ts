@@ -320,8 +320,9 @@ function loadFromFile(): GAESProject[] {
     } catch {}
   }
 
-  const seeded = getInitialSeededProjects();
-  atomicSaveToFile(seeded);
+  // Never populate real or local workspaces with fictional GAES unless explicitly requested.
+  const seeded = process.env.SEED_DEMO_PROJECTS === 'true' ? getInitialSeededProjects() : [];
+  if (seeded.length > 0) atomicSaveToFile(seeded);
   return seeded;
 }
 
@@ -727,6 +728,8 @@ export const serverStorage = {
       }
     }
 
+    // En serverless, nunca aceptar una sesión que no pudo verificarse en PostgreSQL.
+    if (IS_VERCEL) return null;
     const local = memorySessions.get(token);
     if (!local) return null;
     if (Date.now() > local.expiresAt) {

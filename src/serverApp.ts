@@ -10,7 +10,12 @@ app.use(express.json({ limit: '10mb' }));
 
 // CORS & Headers for Vercel Serverless
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  // Same-origin by default. Do not grant cross-origin access to authenticated APIs.
+  const allowedOrigin = process.env.CORS_ALLOWED_ORIGIN;
+  if (allowedOrigin && req.headers.origin === allowedOrigin) {
+    res.header('Access-Control-Allow-Origin', allowedOrigin);
+    res.header('Vary', 'Origin');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   if (req.method === 'OPTIONS') {
@@ -39,7 +44,7 @@ const ai = apiKey
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const SERVER_SALT = crypto.randomBytes(16).toString('hex');
 const CONFIGURED_INSTRUCTOR_PASSWORD = process.env.INSTRUCTOR_PASSWORD;
-const DEMO_INSTRUCTOR_PASSCODE = process.env.DEMO_INSTRUCTOR_PASSWORD || 'DemoInstructor2026*';
+const DEMO_INSTRUCTOR_PASSCODE = process.env.DEMO_INSTRUCTOR_PASSWORD;
 const IS_DEMO_ENV = !CONFIGURED_INSTRUCTOR_PASSWORD;
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
 
@@ -75,7 +80,8 @@ function verifyInstructorPassword(provided: string): { valid: boolean; error?: s
     };
   }
 
-  // Demonstration mode
+  // La contraseña de demostración debe configurarse expresamente; nunca hay una clave pública predeterminada.
+  if (!DEMO_INSTRUCTOR_PASSCODE) return { valid: false, error: 'Configure INSTRUCTOR_PASSWORD para habilitar el acceso del instructor.' };
   const demoHash = hashPassword(DEMO_INSTRUCTOR_PASSCODE, SERVER_SALT);
   const providedHash = hashPassword(clean, SERVER_SALT);
   try {
@@ -84,7 +90,7 @@ function verifyInstructorPassword(provided: string): { valid: boolean; error?: s
       valid: match,
       error: match
         ? undefined
-        : `Credenciales inválidas de Instructor. En este entorno de demostración académica use la clave autorizada (${DEMO_INSTRUCTOR_PASSCODE}) o configure INSTRUCTOR_PASSWORD en .env.`,
+        : 'Credenciales inválidas de Instructor. Acceso denegado.',
     };
   } catch {
     return { valid: false, error: 'Credenciales inválidas de Instructor.' };
@@ -137,7 +143,11 @@ apiRouter.get('/storage/status', async (_req: Request, res: Response) => {
  * POST /storage/init
  * Inicialización controlada e idempotente de tablas en PostgreSQL
  */
-apiRouter.post('/storage/init', async (_req: Request, res: Response) => {
+apiRouter.post('/storage/init', async (req: Request, res: Response) => {
+  const adminSession = await getValidSessionAsync(req);
+  if (!adminSession || adminSession.user.role !== 'INSTRUCTOR') {
+    return res.status(403).json({ success: false, error: 'Inicialización reservada al instructor autenticado.' });
+  }
   const result = await serverStorage.ensureSchemaInitialized();
   const liveCheck = await serverStorage.verifyDatabaseConnection();
   return res.json({
@@ -187,8 +197,15 @@ apiRouter.post('/auth/login', async (req: Request, res: Response) => {
       });
     }
 
-    const reqGaesNum = typeof gaesNumber === 'number' ? gaesNumber : 3;
-    const targetProject = allProjects.find((p) => p.gaesNumber === reqGaesNum);
+    const reqGaesNum = Number(gaesNumber);
+    const requestedFicha = typeof fichaNumber === 'string' ? fichaNumber.trim() : '';
+    if (!Number.isInteger(reqGaesNum) || reqGaesNum < 1 || !requestedFicha) {
+      return res.status(400).json({ success: false, error: 'Seleccione un GAES y su ficha válidos.' });
+    }
+    const targetProject = allProjects.find((p) => p.gaesNumber === reqGaesNum && p.fichaNumber === requestedFicha);
+    if (!targetProject || !targetProject.isRosterConfirmed) {
+      return res.status(403).json({ success: false, error: 'El GAES no existe o su nómina aún no ha sido confirmada por el líder.' });
+    }
     const registeredApprentice = targetProject?.apprentices?.find(
       (a) => a.email.toLowerCase() === normalizedEmail
     );
@@ -220,7 +237,10 @@ apiRouter.post('/auth/login', async (req: Request, res: Response) => {
       });
     }
 
-    if (registeredApprentice && registeredApprentice.document) {
+    if (!registeredApprentice || !registeredApprentice.document) {
+      return res.status(403).json({ success: false, error: 'El aprendiz no figura con documento en la nómina oficial del GAES.' });
+    }
+    if (registeredApprentice.document) {
       const cleanRegDoc = registeredApprentice.document.toString().trim().replace(/[\.\s-]/g, '');
       if (providedDoc !== cleanRegDoc) {
         return res.status(401).json({
@@ -236,10 +256,10 @@ apiRouter.post('/auth/login', async (req: Request, res: Response) => {
       email: normalizedEmail,
       name: registeredApprentice?.name || (name && typeof name === 'string' ? name.trim() : '') || 'Aprendiz en Gestión Empresarial',
       role: 'APRENDIZ',
-      fichaNumber: targetProject?.fichaNumber || fichaNumber || '2687410',
+      fichaNumber: targetProject.fichaNumber,
       gaesNumber: reqGaesNum,
-      regional: targetProject?.regional || 'Regional Valle del Cauca',
-      centerName: targetProject?.centerName || 'Centro de Gestión y Desarrollo Agroindustrial',
+      regional: targetProject.regional,
+      centerName: targetProject.centerName,
       authenticatedAt: new Date().toISOString(),
     };
 
@@ -360,7 +380,7 @@ apiRouter.get('/auth/demo-info', (_req: Request, res: Response) => {
     environment: IS_PRODUCTION ? 'PRODUCCION' : 'DEMOSTRACION_ACADEMICA_AISLADA',
     isDemoMode: IS_DEMO_ENV,
     hasConfiguredPassword: Boolean(CONFIGURED_INSTRUCTOR_PASSWORD),
-    demoInstructorKeyHint: IS_DEMO_ENV ? DEMO_INSTRUCTOR_PASSCODE : null,
+    demoInstructorKeyHint: null,
     entraIdStatus: {
       configured: Boolean(process.env.AZURE_ENTRA_CLIENT_ID && process.env.AZURE_ENTRA_TENANT_ID),
       protocol: 'OpenID Connect (OIDC) / Microsoft Entra ID',
@@ -492,9 +512,12 @@ apiRouter.post('/projects', async (req: Request, res: Response) => {
     return res.status(400).json({ success: false, error: 'Datos incompletos para el registro del GAES.' });
   }
 
-  const ficha = (newProjectData.fichaNumber || '2687410').trim();
+  const ficha = typeof newProjectData.fichaNumber === 'string' ? newProjectData.fichaNumber.trim() : '';
   const gaesNum = Number(newProjectData.gaesNumber);
 
+  if (!ficha || !Number.isInteger(gaesNum) || gaesNum < 1 || !newProjectData.company.name?.trim()) {
+    return res.status(400).json({ success: false, error: 'Ficha, número de GAES y empresa son obligatorios.' });
+  }
   // Duplicate check
   const existingSameGaes = await serverStorage.getProjectByGaesAndFicha(gaesNum, ficha);
   if (existingSameGaes) {
@@ -516,11 +539,21 @@ apiRouter.post('/projects', async (req: Request, res: Response) => {
   }
 
   const normalizedLeaderEmail = leaderApprentice.email.trim().toLowerCase();
+  if (!leaderApprentice.document?.toString().trim()) {
+    return res.status(400).json({ success: false, error: 'El documento del líder es obligatorio.' });
+  }
   if (!/^[a-zA-Z0-9._%+-]+@soy\.sena\.edu\.co$/i.test(normalizedLeaderEmail)) {
     return res.status(400).json({
       success: false,
       error: 'El correo del líder del GAES debe pertenecer obligatoriamente al dominio institucional @soy.sena.edu.co.',
     });
+  }
+
+  // Un registro nuevo solo puede pertenecer al aprendiz líder de la ficha y GAES indicados.
+  if (session && (session.user.role !== 'APRENDIZ' ||
+      session.user.email.trim().toLowerCase() !== normalizedLeaderEmail ||
+      session.user.fichaNumber !== ficha || Number(session.user.gaesNumber) !== gaesNum)) {
+    return res.status(403).json({ success: false, error: 'La sesión activa no corresponde al líder y GAES que intenta registrar.' });
   }
 
   let userToken = '';
@@ -630,7 +663,7 @@ apiRouter.put('/projects/:id', async (req: Request, res: Response) => {
     return res.status(404).json({ success: false, error: 'Proyecto formativo no encontrado.' });
   }
 
-  if (session.user.role === 'APRENDIZ' && existing.gaesNumber !== session.user.gaesNumber) {
+  if (session.user.role === 'APRENDIZ' && (existing.gaesNumber !== session.user.gaesNumber || existing.fichaNumber !== session.user.fichaNumber)) {
     return res.status(403).json({
       success: false,
       error: `Acceso denegado: No tiene autorización para modificar los datos del GAES ${existing.gaesNumber}.`,
@@ -661,7 +694,7 @@ apiRouter.put('/projects/:id', async (req: Request, res: Response) => {
   }
 
   const serverVersion = existing.version || 1;
-  if (clientVersion < serverVersion) {
+  if (clientVersion !== serverVersion) {
     return res.status(409).json({
       success: false,
       conflict: true,
@@ -678,9 +711,10 @@ apiRouter.put('/projects/:id', async (req: Request, res: Response) => {
   }
 
   // Roster lock protection
-  if (existing.isRosterConfirmed && session.user.role === 'APRENDIZ') {
+  if (existing.isRosterConfirmed) {
     sanitizedUpdates.apprentices = existing.apprentices;
     sanitizedUpdates.gaesNumber = existing.gaesNumber;
+    sanitizedUpdates.fichaNumber = existing.fichaNumber;
     if (sanitizedUpdates.company) {
       sanitizedUpdates.company = {
         ...sanitizedUpdates.company,
@@ -689,12 +723,29 @@ apiRouter.put('/projects/:id', async (req: Request, res: Response) => {
     }
   }
 
+  // La identidad de un proyecto nunca puede alterarse mediante una actualización ordinaria.
+  sanitizedUpdates.id = existing.id;
+  sanitizedUpdates.gaesNumber = existing.gaesNumber;
+  sanitizedUpdates.fichaNumber = existing.fichaNumber;
+  if (existing.isRosterConfirmed) {
+    sanitizedUpdates.company = { ...(sanitizedUpdates.company || existing.company), name: existing.company.name };
+    sanitizedUpdates.isRosterConfirmed = true;
+    sanitizedUpdates.rosterConfirmedAt = existing.rosterConfirmedAt;
+    sanitizedUpdates.rosterConfirmedBy = existing.rosterConfirmedBy;
+  }
   const nextVersion = serverVersion + 1;
   const now = new Date().toISOString();
 
   const isConfirmingRosterNow = Boolean(sanitizedUpdates.isRosterConfirmed && !existing.isRosterConfirmed);
   if (isConfirmingRosterNow) {
     const candidates = sanitizedUpdates.apprentices || existing.apprentices || [];
+    const normalizedEmails = candidates.map((a: any) => String(a.email || '').trim().toLowerCase());
+    if (!candidates.length || candidates.some((a: any) =>
+      !String(a.name || '').trim() || !String(a.document || '').trim() ||
+      !/^[a-zA-Z0-9._%+-]+@soy\.sena\.edu\.co$/i.test(String(a.email || '').trim())
+    ) || new Set(normalizedEmails).size !== candidates.length) {
+      return res.status(400).json({ success: false, error: 'Antes de confirmar, todos los integrantes deben tener nombre, documento y correo institucional válido y sin duplicados.' });
+    }
     if (!candidates.some((a: any) => a.role === 'Líder GAES')) {
       return res.status(400).json({
         success: false,
@@ -805,6 +856,16 @@ apiRouter.post('/projects/:id/reopen', async (req: Request, res: Response) => {
   }
 
   const serverVersion = existing.version || 1;
+  // La identidad de un proyecto nunca puede alterarse mediante una actualización ordinaria.
+  sanitizedUpdates.id = existing.id;
+  sanitizedUpdates.gaesNumber = existing.gaesNumber;
+  sanitizedUpdates.fichaNumber = existing.fichaNumber;
+  if (existing.isRosterConfirmed) {
+    sanitizedUpdates.company = { ...(sanitizedUpdates.company || existing.company), name: existing.company.name };
+    sanitizedUpdates.isRosterConfirmed = true;
+    sanitizedUpdates.rosterConfirmedAt = existing.rosterConfirmedAt;
+    sanitizedUpdates.rosterConfirmedBy = existing.rosterConfirmedBy;
+  }
   const nextVersion = serverVersion + 1;
   const now = new Date().toISOString();
 
