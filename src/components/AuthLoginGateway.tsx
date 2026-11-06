@@ -37,8 +37,8 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
   const [selectedGaesId, setSelectedGaesId] = useState(availableProjects[0]?.id || '');
 
   // Leader new GAES registration state
-  const [regFichaNumber, setRegFichaNumber] = useState('2687410');
-  const [regGaesNumber, setRegGaesNumber] = useState(6);
+  const [regFichaNumber, setRegFichaNumber] = useState('');
+  const [regGaesNumber, setRegGaesNumber] = useState(1);
   const [regCompanyName, setRegCompanyName] = useState('');
   const [regLeaderName, setRegLeaderName] = useState('');
   const [regLeaderEmail, setRegLeaderEmail] = useState('');
@@ -96,6 +96,10 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
     }
 
     const chosenProj = availableProjects.find((p) => p.id === selectedGaesId) || availableProjects[0];
+    if (selectedRole === 'APRENDIZ' && !chosenProj) {
+      setErrorMessage('No hay GAES registrados disponibles. El líder debe registrar y confirmar la nómina primero.');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -108,8 +112,8 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
           documentNumber: documentNumber.trim(),
           role: selectedRole,
           name: name.trim(),
-          gaesNumber: chosenProj?.gaesNumber || 3,
-          fichaNumber: chosenProj?.fichaNumber || '2687410',
+          gaesNumber: chosenProj?.gaesNumber,
+          fichaNumber: chosenProj?.fichaNumber,
         }),
       });
 
@@ -147,6 +151,10 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
     const cleanFicha = regFichaNumber.trim();
     const numGaes = Number(regGaesNumber);
 
+    if (!cleanFicha || !Number.isInteger(numGaes) || numGaes < 1) {
+      setErrorMessage('Indique la ficha real y un número de GAES válido.');
+      return;
+    }
     if (!cleanCompanyName) {
       setErrorMessage('Debe ingresar la razón social o nombre de la empresa previamente seleccionada por el GAES.');
       return;
@@ -191,7 +199,7 @@ export const AuthLoginGateway: React.FC<AuthLoginGatewayProps> = ({
               name: cleanLeaderName,
               document: cleanLeaderDoc,
               email: normLeaderEmail,
-              phone: regLeaderPhone.trim() || '300 000 0000',
+              phone: regLeaderPhone.trim(),
               role: 'Líder GAES',
             },
           ],

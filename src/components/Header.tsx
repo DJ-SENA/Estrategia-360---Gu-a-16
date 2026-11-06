@@ -154,13 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </>
                 )}
               </select>
-              <button
-                onClick={onNewProject}
-                title="Crear nuevo GAES"
-                className="p-1 hover:bg-slate-700 text-slate-400 hover:text-emerald-400 rounded transition-colors"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-              </button>
+
             </div>
           ) : (
             <div className="inline-flex items-center bg-slate-800/80 rounded-lg px-2.5 py-1.5 border border-slate-700/80 text-xs font-medium text-slate-300">
@@ -297,13 +291,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden sm:inline">Reporte SENA</span>
             </button>
 
-            <button
-              onClick={onResetToDemo}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
-              title="Recargar datos modelo de AgroLácteos (GAES 3)"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
+
           </div>
         </div>
       </div>
