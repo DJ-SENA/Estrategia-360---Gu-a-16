@@ -1,0 +1,6 @@
+{
+  "name": "SENA Estrategia 360 - Guía 16 & Balanced Scorecard",
+  "description": "Plataforma interactiva para aprendices de Tecnólogo en Gestión Empresarial SENA: articulación de Guía 16, matrices estratégicas (PESTA, MEFI, MEFE, DOFA, PEYEA, MPC, BCG) y Cuadro de Mando Integral con auditoría y panel evaluativo del instructor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
